@@ -1,10 +1,11 @@
 import React from 'react';
 import Header from './Header';
+import StudentDashboard from './StudentDashboard'
 
 function Connectivity() {
   return (
     <div >
-        <Header />
+        <StudentDashboard />
     </div>
   );
 }
