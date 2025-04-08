@@ -38,7 +38,7 @@ const StudentDashboard = () => {
       >
         {/* Close Button */}
         <div className="lg:hidden flex justify-end p-4">
-          <MdClose className="text-3xl cursor-pointer" onClick={toggleSidebar} />
+          <MdClose className="text-3xl cursor-pointer text-green-600" onClick={toggleSidebar} />
         </div>
         <div className="flex items-center gap-2 text-green-600 text-2xl font-bold">
           <GiSpellBook /> classBOOK
@@ -72,11 +72,11 @@ const StudentDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 p-5 lg:ml-64">
-        {/* Top Bar */}
-        <div className="flex justify-between items-center bg-gray-50 p-3 rounded-md shadow-sm">
+        {/* Top Bar (Sticky) */}
+        <div className="sticky top-0 z-30 bg-gray-50 p-3 rounded-md shadow-sm flex justify-between items-center">
           <div className="flex items-center gap-3">
             {/* Sidebar Toggle Button */}
-            <IoMdMenu className="text-2xl cursor-pointer lg:hidden" onClick={toggleSidebar} />
+            <IoMdMenu className="text-2xl text-green-600 text-green- cursor-pointer lg:hidden" onClick={toggleSidebar} />
             <div className="flex items-center bg-white p-2 rounded-md shadow-sm w-2/3 lg:w-1/3">
               <FaSearch className="text-gray-500 mr-2" />
               <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" />
