@@ -1,5 +1,5 @@
 import React from "react";
-import HomeImage from "../images/elearn.jpg";
+import HomeImage from "../images/elearn-removebg-preview.png";
 
 function Home() {
   return (
@@ -30,11 +30,11 @@ function Home() {
         </div>
 
         {/* Right Side - Image (Styled to Match Screenshot) */}
-        <div className="relative w-full h-[500px] rounded-lg shadow-lg overflow-hidden flex justify-center items-center">
+        <div className="relative w-full h-[500px] rounded-lg overflow-hidden flex justify-center items-center">
           <img
             src={HomeImage}
             alt="E-learning"
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full  object-center"
           />
         </div>
       </div>
