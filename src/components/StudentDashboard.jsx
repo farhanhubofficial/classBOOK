@@ -84,7 +84,7 @@ const StudentDashboard = () => {
           <p className="text-sm text-gray-600">
   {userData ? (
     <>
-      <span className="uppercase font-bold">{userData.curriculum}</span>, {userData.grade}
+      <span className="uppercase font-bold">{userData.curriculum}</span>, 
     </>
   ) : (
     "Loading..."
@@ -134,9 +134,15 @@ const StudentDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <p className="text-gray-700">{userData?.firstName || "Loading..."}</p>
-            <FaUserCircle className="text-3xl text-gray-500" />
-          </div>
+  <FaUserCircle className="text-5xl text-gray-500" /> {/* Larger icon */}
+  <div>
+    <p className="text-sm text-gray-700">
+      {userData?.firstName || "Loading..."} {userData?.lastName || ""}
+    </p>
+    <p className="text-xs text-gray-500">{userData?.grade}</p> {/* Grade below name */}
+  </div>
+</div>
+
         </div>
 
         {/* Content Area */}
