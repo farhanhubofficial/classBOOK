@@ -79,12 +79,12 @@ function Header() {
 
               {/* Sign In & Register Buttons (Only in Mobile Menu) */}
               <li className="mt-auto">
-                <Link to="/signin" onClick={() => setMenu(false)} className="border-b border-gray-300 p-2 rounded bg-blue-700 text-white text-center w-full">
+                <Link to="/login" onClick={() => setMenu(false)} className="border-b border-gray-300 p-2 rounded bg-blue-700 text-white text-center w-full">
                   Sign In
                 </Link>
               </li>
               <li>
-                <Link to="/register" onClick={() => setMenu(false)} className="border-b border-gray-300 p-2 rounded bg-green-700 text-white text-center w-full">
+                <Link to="/signup" onClick={() => setMenu(false)} className="border-b border-gray-300 p-2 rounded bg-green-700 text-white text-center w-full">
                   Register
                 </Link>
               </li>
