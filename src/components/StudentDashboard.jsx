@@ -81,6 +81,17 @@ const StudentDashboard = () => {
           <p className="text-sm text-gray-600">
             {userData ? userData.category : "Loading..."}
           </p>
+          <p className="text-sm text-gray-600">
+  {userData ? (
+    <>
+      <span className="uppercase font-bold">{userData.curriculum}</span>, {userData.grade}
+    </>
+  ) : (
+    "Loading..."
+  )}
+</p>
+
+         
         </div>
         <nav className="mt-10 space-y-3">
           <a href="#" className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
@@ -123,7 +134,7 @@ const StudentDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <p className="text-gray-700">{userData?.grade || "Loading..."}</p>
+            <p className="text-gray-700">{userData?.firstName || "Loading..."}</p>
             <FaUserCircle className="text-3xl text-gray-500" />
           </div>
         </div>
