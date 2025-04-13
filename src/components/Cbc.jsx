@@ -7,7 +7,8 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-const grades = ["grade_1", "grade_2", "grade_3", "grade_4", "grade_5"];
+// Grade & Subject Options
+const grades = ["pp1", "pp2", ...Array.from({ length: 12 }, (_, i) => `grade_${i + 1}`)];
 const subjects = ["english", "math", "science", "kiswahili", "social_studies"];
 
 const Cbc = () => {
@@ -16,6 +17,12 @@ const Cbc = () => {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [newTopic, setNewTopic] = useState({ title: "", description: "", videoFile: null });
   const [isUploading, setIsUploading] = useState(false);
+  const [topics, setTopics] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  // To keep track of where we came from (Grades, Subjects, or Topic)
+  const [previousView, setPreviousView] = useState("");
 
   const handleAddTopic = async () => {
     if (!selectedGrade || !selectedSubject || !newTopic.title || !newTopic.videoFile) {
@@ -47,8 +54,55 @@ const Cbc = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchTopics = async () => {
+      if (!selectedGrade || !selectedSubject) return;
+
+      const topicsRef = collection(db, "cbc", selectedGrade, "subjects", selectedSubject, "topics");
+      const snapshot = await getDocs(topicsRef);
+      const topicList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setTopics(topicList);
+    };
+
+    fetchTopics();
+  }, [selectedGrade, selectedSubject]);
+
+  const handleGradeClick = (grade) => {
+    setPreviousView("grades");  // Remember we came from grades view
+    setSelectedGrade(grade);
+    setSelectedSubject("");
+    setSelectedTopic(null);
+    setTopics([]);
+  };
+
+  const handleSubjectSelect = (subject) => {
+    setPreviousView("subjects");  // Remember we came from subjects view
+    setSelectedSubject(subject);
+    setSelectedTopic(null);
+  };
+
+  const toggleFullScreen = () => setIsFullScreen(!isFullScreen);
+
+  const handleGoBack = () => {
+    if (previousView === "grades") {
+      setSelectedGrade("");
+      setSelectedSubject("");
+      setSelectedTopic(null);
+      setTopics([]);
+    } else if (previousView === "subjects") {
+      setSelectedSubject("");
+      setSelectedTopic(null);
+      setTopics([]);
+    } else if (previousView === "topics") {
+      setSelectedTopic(null);  // Only reset selectedTopic
+    }
+
+    // After going back, set the previous view accordingly
+    setPreviousView(""); // Reset previous view to avoid any conflicts in subsequent back actions.
+  };
+
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 max-w-6xl mx-auto">
       {/* CBC Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-green-100 p-6 rounded shadow text-center">
@@ -70,6 +124,97 @@ const Cbc = () => {
           ➕ Add New CBC Topic
         </button>
       </div>
+
+      {/* Grade Selection */}
+      {!selectedGrade && (
+        <div>
+          <h3 className="text-xl font-bold mb-4 text-center">Select a Grade to View Topics</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+            {grades.map((grade) => (
+              <div
+                key={grade}
+                onClick={() => handleGradeClick(grade)}
+                className="bg-blue-200 p-4 rounded-lg cursor-pointer text-center hover:bg-blue-300"
+              >
+                <h3 className="font-semibold">{grade.replace("_", " ").toUpperCase()}</h3>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Go Back Button */}
+      {(selectedGrade || selectedSubject) && (
+        <div className="mt-4">
+          <button
+            onClick={handleGoBack}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+          >
+            ← Go Back
+          </button>
+        </div>
+      )}
+
+      {/* Subject Buttons */}
+      {selectedGrade && !selectedSubject && (
+        <div>
+          <h3 className="text-xl font-semibold text-center mb-4">
+            Select a Subject for {selectedGrade.replace("_", " ").toUpperCase()}
+          </h3>
+          <div className="flex flex-wrap gap-4 justify-center">
+            {subjects.map((subject) => (
+              <button
+                key={subject}
+                onClick={() => handleSubjectSelect(subject)}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              >
+                {subject.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Topics List */}
+      {selectedGrade && selectedSubject && !selectedTopic && (
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {topics.length > 0 ? (
+            topics.map((topic) => (
+              <div
+                key={topic.id}
+                onClick={() => setSelectedTopic(topic)}
+                className="border p-4 rounded-lg cursor-pointer hover:bg-blue-50"
+              >
+                <h4 className="font-semibold text-lg">{topic.title}</h4>
+                <p className="text-sm text-gray-600">{topic.description}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500 col-span-full">No topics available for this subject.</p>
+          )}
+        </div>
+      )}
+
+      {/* Topic Viewer */}
+      {selectedTopic && (
+        <div className="mt-6">
+          <h3 className="text-xl font-semibold mb-4">Now Watching: {selectedTopic.title}</h3>
+          <div className={`relative ${isFullScreen ? "w-full h-screen" : "w-full max-w-3xl mx-auto"}`}>
+            <iframe
+              src={selectedTopic.videoUrl}
+              title={selectedTopic.title}
+              className="w-full h-64 sm:h-96 rounded-lg"
+              allowFullScreen
+            ></iframe>
+            <button
+              onClick={toggleFullScreen}
+              className="absolute top-2 right-2 bg-blue-500 text-white px-4 py-2 rounded-full"
+            >
+              {isFullScreen ? "Exit Full Screen" : "Full Screen"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {showModal && (
