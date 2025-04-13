@@ -7,6 +7,7 @@ import Login from './Login';
 import SignUp from './Signup';
 import StudentDashboard from './StudentDashboard';
 import LearnersDashboard from './LearnerDashboard';
+import Cbc from './Cbc'
 
 // Admin components
 import AdminDashboard from './AdminDashboard';
@@ -37,6 +38,7 @@ function Connectivity() {
         {/* Admin Nested Routes */}
         <Route path="/admin" element={<AdminDashboard />}>
           <Route path="dashboard" element={<DashboardHome />} />
+          <Route path = "curriculum/cbc" element = {<Cbc/>}/>
           {/* <Route path="students" element={<StudentsPage />} />
           <Route path="parents" element={<ParentsPage />} /> */}
           {/* Add more nested routes like staffs, payments, etc */}

@@ -28,7 +28,7 @@ function Login() {
         if (userData.role === "learner") {
           navigate("/studentdashboard");
         } else if (userData.role === "admin") {
-          navigate("/admin");
+          navigate("/admin/dashboard");
         } else if (userData.role === "operator") {
           navigate("/users");
         } else {
