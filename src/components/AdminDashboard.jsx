@@ -91,6 +91,10 @@ const AdminDashboard = () => {
           <h2 className="text-lg font-semibold mt-2">
             {userData ? `${userData.firstName} ${userData.lastName}` : "Loading..."}
           </h2>
+          <h2 className=" font-semibold mt-2">
+  {userData ? `${userData.role}` : "Loading..."}
+</h2>
+
           <p className="text-sm text-gray-600">{userData ? userData.category : "Loading..."}</p>
           <p className="text-sm text-gray-600">
             {userData ? (
