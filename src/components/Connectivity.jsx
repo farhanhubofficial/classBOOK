@@ -2,28 +2,45 @@ import React from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 
 import Header from './Header';
-import StudentDashboard from './StudentDashboard';
-import LearnersDashboard from './LearnerDashboard'; // Make sure to import LearnersDashboard
 import Home from './Home';
 import Login from './Login';
 import SignUp from './Signup';
+import StudentDashboard from './StudentDashboard';
+import LearnersDashboard from './LearnerDashboard';
+
+// Admin components
+import AdminDashboard from './AdminDashboard';
+import DashboardHome from './DashboardHome';
+// import StudentsPage from './components/admin/StudentsPage';
+// import ParentsPage from './components/admin/ParentsPage';
 
 function Connectivity() {
   const location = useLocation();
 
-  // Check if current route is NOT /studentdashboard or /learners-dashboard
-  const showHeader = location.pathname !== '/studentdashboard' && location.pathname !== '/learners-dashboard';
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const showHeader =
+    location.pathname !== '/studentdashboard' &&
+    location.pathname !== '/learners-dashboard' &&
+    !isAdminRoute;
 
   return (
     <>
       {showHeader && <Header />}
       <Routes>
+        {/* General Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/studentdashboard" element={<StudentDashboard />} />
-        {/* Add LearnersDashboard route */}
         <Route path="/learners-dashboard" element={<LearnersDashboard />} />
+
+        {/* Admin Nested Routes */}
+        <Route path="/admin" element={<AdminDashboard />}>
+          <Route path="dashboard" element={<DashboardHome />} />
+          {/* <Route path="students" element={<StudentsPage />} />
+          <Route path="parents" element={<ParentsPage />} /> */}
+          {/* Add more nested routes like staffs, payments, etc */}
+        </Route>
       </Routes>
     </>
   );
