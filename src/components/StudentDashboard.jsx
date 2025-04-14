@@ -7,8 +7,8 @@ import { IoMdMenu } from "react-icons/io";
 import { MdClose } from "react-icons/md";
 import { getAuth, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase-config"; // make sure this path is correct
-import { useNavigate } from "react-router-dom";
+import { db } from "../firebase-config";
+import { useNavigate, Outlet } from "react-router-dom";
 
 const StudentDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -17,9 +17,7 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
   const auth = getAuth();
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev);
-  };
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   const handleLogout = async () => {
     try {
@@ -30,7 +28,6 @@ const StudentDashboard = () => {
     }
   };
 
-  // 🔥 Fetch user data from Firestore
   useEffect(() => {
     const fetchUserData = async () => {
       const currentUser = auth.currentUser;
@@ -53,9 +50,7 @@ const StudentDashboard = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSidebarOpen]);
 
   return (
@@ -78,37 +73,25 @@ const StudentDashboard = () => {
           <h2 className="text-lg font-semibold mt-2">
             {userData ? `${userData.firstName} ${userData.lastName}` : "Loading..."}
           </h2>
-          <p className="text-sm text-gray-600">
-            {userData ? userData.category : "Loading..."}
-          </p>
-          <p className="text-sm text-gray-600">
-  {userData ? (
-    <>
-      <span className="uppercase font-bold">{userData.curriculum}</span>, 
-    </>
-  ) : (
-    "Loading..."
-  )}
-</p>
-
-         
+          <p className="text-sm text-gray-600">{userData?.category || "Loading..."}</p>
+          <p className="text-sm text-gray-600 uppercase font-bold">{userData?.curriculum}</p>
         </div>
         <nav className="mt-10 space-y-3">
-          <a href="#" className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
-            <FaUserCircle /> Student Dashboard
-          </a>
-          <a href="#" className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
-            <FiSettings /> Setting
-          </a>
-          <a href="#" className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/dashboard")}>
+            <FaUserCircle /> Dashboard
+          </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/settings")}>
+            <FiSettings /> Settings
+          </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/subjects")}>
             <MdSubject /> Subjects
-          </a>
-          <a href="#" className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
+          </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
             <MdAssessment /> Exam Reports
-          </a>
-          <a href="#" className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
+          </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
             <MdAssessment /> Exams
-          </a>
+          </button>
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 p-2 text-red-600 rounded-md hover:bg-red-100"
@@ -126,28 +109,23 @@ const StudentDashboard = () => {
             <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
             <div className="flex items-center bg-white p-2 rounded-md shadow-sm w-2/3 lg:w-1/3">
               <FaSearch className="text-gray-500 mr-2" />
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-full outline-none bg-transparent lg:w-[400px] xl:w-[500px]"
-              />
+              <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" />
             </div>
           </div>
           <div className="flex items-center gap-4">
-  <FaUserCircle className="text-5xl text-gray-500" /> {/* Larger icon */}
-  <div>
-    <p className="text-sm text-gray-700">
-      {userData?.firstName || "Loading..."} {userData?.lastName || ""}
-    </p>
-    <p className="text-xs text-gray-500">{userData?.grade}</p> {/* Grade below name */}
-  </div>
-</div>
-
+            <FaUserCircle className="text-5xl text-gray-500" />
+            <div>
+              <p className="text-sm text-gray-700">
+                {userData?.firstName || "Loading..."} {userData?.lastName || ""}
+              </p>
+              <p className="text-xs text-gray-500">{userData?.grade}</p>
+            </div>
+          </div>
         </div>
 
-        {/* Content Area */}
+        {/* Page Content */}
         <div className="mt-5 p-5 bg-gray-50 rounded-lg shadow-md h-full">
-          {/* Dynamic content goes here */}
+          <Outlet />
         </div>
       </main>
     </div>
