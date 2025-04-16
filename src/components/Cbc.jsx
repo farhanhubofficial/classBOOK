@@ -4,8 +4,6 @@ import {
   collection,
   addDoc,
   getDocs,
-  query,
-  where,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -26,12 +24,14 @@ const Cbc = () => {
   const [modalGrade, setModalGrade] = useState("");
   const [modalSubject, setModalSubject] = useState("");
 
-  const [newSubjectGrade, setNewSubjectGrade] = useState(""); 
-  const [newSubjectName, setNewSubjectName] = useState(""); 
+  const [newSubjectGrade, setNewSubjectGrade] = useState("");
+  const [newSubjectName, setNewSubjectName] = useState("");
   const [isSubjectAdding, setIsSubjectAdding] = useState(false);
 
-  const [gradeSubjects, setGradeSubjects] = useState([]); // State to hold the subjects for the selected grade
+  const [gradeSubjects, setGradeSubjects] = useState([]); // Main view subjects
+  const [modalGradeSubjects, setModalGradeSubjects] = useState([]); // Modal subjects
 
+  // ✅ Add Topic Function
   const handleAddTopic = async () => {
     if (!modalGrade || !modalSubject || !newTopic.title || !newTopic.videoFile) {
       alert("Please fill in all required fields.");
@@ -72,6 +72,7 @@ const Cbc = () => {
     }
   };
 
+  // ✅ Add Subject Function
   const handleAddSubject = async () => {
     if (!newSubjectGrade || !newSubjectName) {
       alert("Please fill in all required fields.");
@@ -88,9 +89,7 @@ const Cbc = () => {
         return;
       }
 
-      await addDoc(subjectsRef, {
-        name: newSubjectName,
-      });
+      await addDoc(subjectsRef, { name: newSubjectName });
 
       alert("Subject added successfully!");
       setNewSubjectGrade("");
@@ -102,20 +101,7 @@ const Cbc = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchTopics = async () => {
-      if (!selectedGrade || !selectedSubject) return;
-
-      const topicsRef = collection(db, "cbc", selectedGrade, "subjects", selectedSubject, "topics");
-      const snapshot = await getDocs(topicsRef);
-      const topicList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setTopics(topicList);
-    };
-
-    fetchTopics();
-  }, [selectedGrade, selectedSubject]);
-
-  // Fetch subjects for the selected grade
+  // ✅ Fetch subjects for selected grade in main view
   useEffect(() => {
     const fetchSubjects = async () => {
       if (!selectedGrade) return;
@@ -129,6 +115,35 @@ const Cbc = () => {
     fetchSubjects();
   }, [selectedGrade]);
 
+  // ✅ Fetch subjects for modal grade selection
+  useEffect(() => {
+    const fetchModalSubjects = async () => {
+      if (!modalGrade) return;
+
+      const subjectsRef = collection(db, "cbc", modalGrade, "subjects");
+      const snapshot = await getDocs(subjectsRef);
+      const subjectList = snapshot.docs.map((doc) => doc.data().name);
+      setModalGradeSubjects(subjectList);
+    };
+
+    fetchModalSubjects();
+  }, [modalGrade]);
+
+  // ✅ Fetch topics when grade + subject are selected
+  useEffect(() => {
+    const fetchTopics = async () => {
+      if (!selectedGrade || !selectedSubject) return;
+
+      const topicsRef = collection(db, "cbc", selectedGrade, "subjects", selectedSubject, "topics");
+      const snapshot = await getDocs(topicsRef);
+      const topicList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setTopics(topicList);
+    };
+
+    fetchTopics();
+  }, [selectedGrade, selectedSubject]);
+
+  // Navigation + UI logic
   const handleGradeClick = (grade) => {
     setViewHistory((prev) => [...prev, { level: 0 }]);
     setSelectedGrade(grade);
@@ -194,6 +209,7 @@ const Cbc = () => {
 
   return (
     <div className="space-y-6 p-6 max-w-6xl mx-auto">
+      {/* Top Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-green-100 p-6 rounded shadow text-center">
           <h3 className="text-lg font-bold text-green-600">Total CBC Students</h3>
@@ -205,6 +221,7 @@ const Cbc = () => {
         </div>
       </div>
 
+      {/* Action Buttons */}
       <div className="text-right">
         <button
           onClick={() => setShowModal(true)}
@@ -220,6 +237,7 @@ const Cbc = () => {
         </button>
       </div>
 
+      {/* Grade Selection */}
       {!selectedGrade && (
         <div>
           <h3 className="text-xl font-bold mb-4 text-center">Select a Grade to View Topics</h3>
@@ -237,6 +255,7 @@ const Cbc = () => {
         </div>
       )}
 
+      {/* Back button */}
       {viewHistory.length > 0 && (
         <div className="mt-4">
           <button
@@ -248,6 +267,7 @@ const Cbc = () => {
         </div>
       )}
 
+      {/* Subject Selection */}
       {selectedGrade && !selectedSubject && (
         <div>
           <h3 className="text-xl font-semibold text-center mb-4">
@@ -271,6 +291,7 @@ const Cbc = () => {
         </div>
       )}
 
+      {/* Topics List */}
       {selectedGrade && selectedSubject && !selectedTopic && (
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {topics.length > 0 ? (
@@ -293,6 +314,7 @@ const Cbc = () => {
         </div>
       )}
 
+      {/* Topic Viewer */}
       {selectedTopic && (
         <div className="mt-6">
           <h3 className="text-xl font-semibold mb-4">Now Watching: {selectedTopic.title}</h3>
@@ -310,6 +332,7 @@ const Cbc = () => {
         </div>
       )}
 
+      {/* Modals (Topic + Subject) */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-xl w-full p-6 relative">
@@ -362,7 +385,7 @@ const Cbc = () => {
                     }}
                   >
                     <option value="">-- Select Subject --</option>
-                    {gradeSubjects.map((subject) => (
+                    {modalGradeSubjects.map((subject) => (
                       <option key={subject} value={subject}>
                         {subject.toUpperCase()}
                       </option>

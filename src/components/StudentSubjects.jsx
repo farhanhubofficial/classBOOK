@@ -1,68 +1,83 @@
-// StudentSubjects.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { db } from "../firebase-config";
-import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase-config";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 
 const StudentSubjects = () => {
+  const [gradePath, setGradePath] = useState(""); // grade_5, grade_6 etc
+  const [displayGrade, setDisplayGrade] = useState(""); // Grade 5, Grade 6
   const [subjects, setSubjects] = useState([]);
-  const [grade, setGrade] = useState("");
-  const [loading, setLoading] = useState(true);
-  const auth = getAuth();
-  const navigate = useNavigate();
 
+  // Fetch user data when logged in
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const userGrade = userData.grade; // e.g., "Grade 5"
 
-          if (userSnap.exists()) {
-            const userData = userSnap.data();
-            const { grade, subjects: registeredSubjects = [] } = userData;
-            setGrade(grade);
-            setSubjects(registeredSubjects);
-          } else {
-            console.error("User document not found.");
+            // Convert "Grade 5" → "grade_5"
+            const parts = userGrade.split(" ");
+            if (parts.length === 2) {
+              const formattedGrade = `grade_${parts[1]}`;
+              setGradePath(formattedGrade); // used for Firestore path
+              setDisplayGrade(userGrade);   // shown in UI
+            }
           }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        } finally {
-          setLoading(false);
+        } catch (err) {
+          console.error("Error fetching user data:", err);
         }
-      } else {
-        navigate("/login");
       }
     });
 
     return () => unsubscribe();
-  }, [auth, navigate]);
+  }, []);
 
-  if (loading) {
-    return <p className="text-center py-10">Loading subjects...</p>;
-  }
+  // Fetch subjects for the current user's grade
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      if (!gradePath) return;
+
+      try {
+        const subjectsRef = collection(db, "cbc", gradePath, "subjects");
+        const snapshot = await getDocs(subjectsRef);
+
+        if (!snapshot.empty) {
+          const subjectList = snapshot.docs.map((doc) => doc.data().name);
+          setSubjects(subjectList);
+        } else {
+          setSubjects([]);
+        }
+      } catch (err) {
+        console.error("Error fetching subjects:", err);
+      }
+    };
+
+    fetchSubjects();
+  }, [gradePath]);
+  console.log(gradePath)
 
   return (
-    <div className="p-5 bg-white shadow-md rounded-md">
-      <h2 className="text-2xl font-bold mb-4 text-green-600">
-        Subjects for Grade {grade}
+    <div className="p-6 max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4 text-center">
+        Subjects for {displayGrade || "your grade"}
       </h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         {subjects.length > 0 ? (
-          subjects.map((subject) => (
-            <button
-              key={subject}
-              onClick={() => navigate(`/student/subjects/${subject}`)}
-              className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded shadow"
+          subjects.map((name, index) => (
+            <div
+              key={index}
+              className="bg-blue-100 p-4 rounded text-center font-semibold text-lg"
             >
-              {subject.toUpperCase()}
-            </button>
+              {name.toUpperCase()}
+            </div>
           ))
         ) : (
-          <p className="col-span-full text-gray-600">
-            No registered subjects found for Grade {grade}.
+          <p className="text-center text-gray-500 col-span-full">
+            No subjects available.
           </p>
         )}
       </div>
