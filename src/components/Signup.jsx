@@ -28,6 +28,15 @@ function Signup() {
     "Year 8", "Year 9", "Year 10", "Year 11", "Year 12", "Year 13"
   ];
 
+  const EnglishLevels = [
+    "A1 (Beginner)",
+    "A2 (Elementary)",
+    "B1 (Intermediate)",
+    "B2 (Upper Intermediate)",
+    "C1 (Advanced)",
+    "C2 (Proficiency)"
+  ];
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -54,7 +63,7 @@ function Signup() {
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
-      let role = formData.category; // Set role based on selected category
+      let role = formData.category;
 
       await setDoc(userDocRef, {
         email: formData.email,
@@ -62,14 +71,14 @@ function Signup() {
         lastName: formData.lastName,
         role,
         category: formData.category,
-        curriculum: formData.curriculum || null,
+        curriculum: formData.curriculum === "english" ? "English Course" : formData.curriculum || null,
         grade: formData.grade || null,
       });
 
       if (role === "admin") {
         navigate("/admin");
       } else if (formData.category === "learner") {
-        navigate("/studentdashboard");
+        navigate("/students");
       } else {
         navigate("/");
       }
@@ -157,23 +166,46 @@ function Signup() {
                 <option value="">Select Curriculum</option>
                 <option value="cbc">CBC</option>
                 <option value="igcse">IGCSE</option>
+                <option value="english">English Course</option>
+                <option value="arabic">Arabic Course</option>
+                <option value="somali">Somali Course</option>
+                <option value="kiswahili">Kiswahili Course</option>
               </select>
 
               {formData.curriculum && (
-                <select
-                  name="grade"
-                  value={formData.grade}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border rounded-lg bg-white"
-                >
-                  <option value="">Select Grade</option>
-                  {(formData.curriculum === "cbc" ? CBCGrades : IGCSEGrades).map((grade) => (
-                    <option key={grade} value={grade}>
-                      {grade}
-                    </option>
-                  ))}
-                </select>
+                <>
+                  {formData.curriculum === "cbc" || formData.curriculum === "igcse" ? (
+                    <select
+                      name="grade"
+                      value={formData.grade}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border rounded-lg bg-white"
+                    >
+                      <option value="">Select Grade</option>
+                      {(formData.curriculum === "cbc" ? CBCGrades : IGCSEGrades).map((grade) => (
+                        <option key={grade} value={grade}>
+                          {grade}
+                        </option>
+                      ))}
+                    </select>
+                  ) : formData.curriculum === "english" ? (
+                    <select
+                      name="grade"
+                      value={formData.grade}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border rounded-lg bg-white"
+                    >
+                      <option value="">Select Level</option>
+                      {EnglishLevels.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+                </>
               )}
             </>
           )}

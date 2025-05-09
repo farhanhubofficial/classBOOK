@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaSearch, FaUserCircle } from "react-icons/fa";
+import { FaSearch, FaUserCircle, FaBolt } from "react-icons/fa";
 import { FiSettings } from "react-icons/fi";
-import { MdSubject, MdExitToApp, MdAssessment } from "react-icons/md";
+import { MdSubject, MdExitToApp, MdAssessment, MdDescription, MdClose } from "react-icons/md";
 import { GiSpellBook } from "react-icons/gi";
 import { IoMdMenu } from "react-icons/io";
-import { MdClose } from "react-icons/md";
+import { RiFileList3Line } from "react-icons/ri";
 import { getAuth, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
@@ -58,7 +58,7 @@ const StudentDashboard = () => {
       {/* Sidebar */}
       <aside
         ref={sidebarRef}
-        className={`fixed top-0 left-0 z-40 w-64 h-screen bg-gray-100 p-5 flex flex-col shadow-lg transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 z-40 w-64 h-screen bg-gray-100 p-5 flex flex-col shadow-lg transform transition-transform duration-300 overflow-y-auto scrollbar-thin ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
@@ -76,16 +76,35 @@ const StudentDashboard = () => {
           <p className="text-sm text-gray-600">{userData?.category || "Loading..."}</p>
           <p className="text-sm text-gray-600 uppercase font-bold">{userData?.curriculum}</p>
         </div>
-        <nav className="mt-10 space-y-3">
+        <nav className="mt-10 space-y-3 pb-10">
           <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/dashboard")}>
             <FaUserCircle /> Dashboard
           </button>
           <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/settings")}>
             <FiSettings /> Settings
           </button>
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/subjects")}>
-            <MdSubject /> Subjects
-          </button>
+
+          {userData?.curriculum === "English Course" ? (
+            <>
+              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/lessons")}>
+                <GiSpellBook /> Lessons
+              </button>
+              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/lesson-documents")}>
+                <MdDescription /> Lesson Documents
+              </button>
+              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/crash-courses")}>
+                <FaBolt /> Crash Courses
+              </button>
+              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/assignments")}>
+                <RiFileList3Line /> Assignments
+              </button>
+            </>
+          ) : (
+            <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/subjects")}>
+              <MdSubject /> Subjects
+            </button>
+          )}
+
           <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
             <MdAssessment /> Exam Reports
           </button>
@@ -107,7 +126,8 @@ const StudentDashboard = () => {
         <div className="sticky top-0 z-30 bg-gray-50 p-3 rounded-md shadow-sm flex justify-between items-center">
           <div className="flex items-center gap-3">
             <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
-            <div className="flex items-center bg-white p-2 rounded-md shadow-sm w-2/3 lg:w-1/3">
+            <div className="flex items-center bg-white p-2 rounded-md shadow-sm w-full lg:w-2/3">
+
               <FaSearch className="text-gray-500 mr-2" />
               <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" />
             </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase-config"; // ✅ Make sure this path is correct
+import { db } from "../firebase-config";
 
 import {
   FaTachometerAlt,
@@ -32,7 +32,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Fetch Firebase Auth user and Firestore user data
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -74,7 +73,7 @@ const AdminDashboard = () => {
       {/* Sidebar */}
       <aside
         ref={sidebarRef}
-        className={`fixed top-0 left-0 z-40 w-64 h-screen bg-gray-100 p-5 shadow-lg transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 z-40 w-64 h-screen bg-gray-100 p-5 shadow-lg transform transition-transform duration-300 overflow-y-auto max-h-screen ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
@@ -82,7 +81,7 @@ const AdminDashboard = () => {
           <MdClose className="text-3xl text-green-600 cursor-pointer" onClick={toggleSidebar} />
         </div>
 
-        {/* 👇 Sidebar Header */}
+        {/* Sidebar Header */}
         <div className="flex items-center gap-2 text-green-600 text-2xl font-bold mb-4">
           <GiSpellBook /> classBOOK
         </div>
@@ -92,9 +91,8 @@ const AdminDashboard = () => {
             {userData ? `${userData.firstName} ${userData.lastName}` : "Loading..."}
           </h2>
           <h2 className=" font-semibold mt-2">
-  {userData ? `${userData.role}` : "Loading..."}
-</h2>
-
+            {userData ? `${userData.role}` : "Loading..."}
+          </h2>
           <p className="text-sm text-gray-600">{userData ? userData.category : "Loading..."}</p>
           <p className="text-sm text-gray-600">
             {userData ? (

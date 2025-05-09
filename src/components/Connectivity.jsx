@@ -40,7 +40,7 @@ function Connectivity() {
         </Route>
 
         {/* Student Routes */}
-        <Route path="/studentdashboard" element={<StudentDashboard />}>
+        <Route path="/students" element={<StudentDashboard />}>
           <Route path="dashboard" element={<div>Welcome to your dashboard!</div>} />
           <Route path="subjects" element={<StudentSubjects />} />
           <Route path="subjects/:subject" element={<SubjectVideos />} />
