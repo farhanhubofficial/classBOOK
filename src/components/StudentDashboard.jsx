@@ -77,7 +77,7 @@ const StudentDashboard = () => {
           <p className="text-sm text-gray-600 uppercase font-bold">{userData?.curriculum}</p>
         </div>
         <nav className="mt-10 space-y-3 pb-10">
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/dashboard")}>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/dashboard")}>
             <FaUserCircle /> Dashboard
           </button>
           <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/settings")}>

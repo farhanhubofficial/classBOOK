@@ -6,6 +6,7 @@ import Home from './Home';
 import Login from './Login';
 import SignUp from './Signup';
 
+
 // Dashboards
 import StudentDashboard from './StudentDashboard';
 import LearnersDashboard from './LearnerDashboard';
@@ -31,7 +32,7 @@ function Connectivity() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/learners-dashboard" element={<LearnersDashboard />} />
+       
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminDashboard />}>
@@ -41,7 +42,7 @@ function Connectivity() {
 
         {/* Student Routes */}
         <Route path="/students" element={<StudentDashboard />}>
-          <Route path="dashboard" element={<div>Welcome to your dashboard!</div>} />
+          <Route path="dashboard" element={<LearnersDashboard/>} />
           <Route path="subjects" element={<StudentSubjects />} />
           <Route path="subjects/:subject" element={<SubjectVideos />} />
           <Route path="settings" element={<div>Student Settings Page</div>} />
