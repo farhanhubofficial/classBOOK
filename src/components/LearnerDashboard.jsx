@@ -67,56 +67,62 @@ function LearnerDashboard() {
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen font-sans">
-      <h1 className="text-2xl font-bold mb-4">
-        {getGreeting()}, <span className="text-green-600">{userData?.firstName || "Learner"}</span> 👋
-      </h1>
+    <div className="p-4 sm:p-6 bg-gray-100 min-h-screen font-sans overflow-x-hidden">
+      <div className="container mx-auto">
+        <h1 className="text-2xl font-bold mb-4">
+          {getGreeting()}, <span className="text-green-600">{userData?.firstName || "Learner"}</span> 👋
+        </h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Calendar and Attendance */}
-        <div className="bg-white p-6 rounded shadow">
-          <h2 className="text-xl font-semibold mb-4">📅 Calendar</h2>
-          <Calendar onChange={setDate} value={date} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Calendar and Attendance */}
+          <div className="bg-white p-6 rounded shadow overflow-auto">
+            <h2 className="text-xl font-semibold mb-4">📅 Calendar</h2>
+            <Calendar onChange={setDate} value={date} />
 
-          <div className="mt-6 grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-4 rounded shadow-sm">
-              <p className="font-medium text-gray-700">Days Present</p>
-              <p className="text-green-600 text-xl">{attendance.presentDays}</p>
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 p-4 rounded shadow-sm">
+                <p className="font-medium text-gray-700">Days Present</p>
+                <p className="text-green-600 text-xl">{attendance.presentDays}</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded shadow-sm">
+                <p className="font-medium text-gray-700">Days Absent</p>
+                <p className="text-red-500 text-xl">{attendance.absentDays}</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded shadow-sm col-span-2">
+                <p className="font-medium text-gray-700">Course Duration</p>
+                <p className="text-gray-800 text-lg">{attendance.totalDuration} days</p>
+                <p className="text-blue-600 text-sm">Days Left: {daysLeft}</p>
+              </div>
             </div>
-            <div className="bg-gray-50 p-4 rounded shadow-sm">
-              <p className="font-medium text-gray-700">Days Absent</p>
-              <p className="text-red-500 text-xl">{attendance.absentDays}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded shadow-sm col-span-2">
-              <p className="font-medium text-gray-700">Course Duration</p>
-              <p className="text-gray-800 text-lg">{attendance.totalDuration} days</p>
-              <p className="text-blue-600 text-sm">Days Left: {daysLeft}</p>
+
+            <div className="text-center mt-6">
+              <button
+                onClick={() => setPresent(!present)}
+                className={`px-6 py-2 text-white font-medium rounded transition-colors ${
+                  present ? "bg-green-600" : "bg-gray-700"
+                }`}
+              >
+                {present ? "Marked as Present ✅" : "Mark Present"}
+              </button>
             </div>
           </div>
 
-          <div className="text-center mt-6">
-            <button
-              onClick={() => setPresent(!present)}
-              className={`px-6 py-2 text-white font-medium rounded transition-colors ${
-                present ? "bg-green-600" : "bg-gray-700"
-              }`}
-            >
-              {present ? "Marked as Present ✅" : "Mark Present"}
-            </button>
+          {/* Attendance Chart */}
+          <div className="bg-white p-6 rounded shadow overflow-auto">
+            <h2 className="text-xl font-semibold mb-4">📈 Attendance Trend</h2>
+            <div className="w-full max-w-full">
+              <Line data={attendanceData} />
+            </div>
           </div>
         </div>
 
-        {/* Attendance Chart */}
-        <div className="bg-white p-6 rounded shadow">
-          <h2 className="text-xl font-semibold mb-4">📈 Attendance Trend</h2>
-          <Line data={attendanceData} />
+        {/* Assignment Submission Chart */}
+        <div className="mt-6 bg-white p-6 rounded shadow overflow-auto">
+          <h2 className="text-xl font-semibold mb-4">📚 Assignment Submissions</h2>
+          <div className="w-full max-w-full">
+            <Bar data={assignmentsData} />
+          </div>
         </div>
-      </div>
-
-      {/* Assignment Submission Chart */}
-      <div className="mt-6 bg-white p-6 rounded shadow">
-        <h2 className="text-xl font-semibold mb-4">📚 Assignment Submissions</h2>
-        <Bar data={assignmentsData} />
       </div>
     </div>
   );
