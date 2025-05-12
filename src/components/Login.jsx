@@ -53,7 +53,7 @@ function Login() {
 
           // Auto redirect if already logged in
           if (userData.role === "learner") {
-            navigate("/studentdashboard");
+            navigate("/students/dashboard");
           } else if (userData.role === "admin") {
             navigate("/admin");
           } else if (userData.role === "operator") {
