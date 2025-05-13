@@ -13,6 +13,7 @@ import { useNavigate, Outlet } from "react-router-dom";
 const StudentDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false); // New state for mobile search toggle
   const sidebarRef = useRef(null);
   const navigate = useNavigate();
   const auth = getAuth();
@@ -123,24 +124,47 @@ const StudentDashboard = () => {
       {/* Main Content */}
       <main className="flex-1 p-5 lg:ml-64">
         {/* Top Bar */}
-        <div className="sticky top-0 z-30 bg-gray-50 p-3 rounded-md shadow-sm flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
-            <div className="flex items-center bg-white p-2 rounded-md shadow-sm w-full lg:w-2/3">
+        <div className="sticky top-0 z-30 bg-gray-50 p-3 rounded-md shadow-sm flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
 
+              {/* Desktop search input */}
+              <div className="hidden lg:flex items-center bg-white p-2 rounded-md shadow-sm w-full lg:w-2/3">
+                <FaSearch className="text-gray-500 mr-2" />
+                <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" />
+              </div>
+
+              {/* Mobile search icon */}
+              <FaSearch
+                className="text-2xl text-gray-500 cursor-pointer lg:hidden"
+                onClick={() => setIsSearchOpen((prev) => !prev)}
+              />
+            </div>
+
+            <div className="flex items-center gap-4">
+              <FaUserCircle className="text-5xl text-gray-500" />
+              <div>
+                <p className="text-sm text-gray-700">
+                  {userData?.firstName || "Loading..."} {userData?.lastName || ""}
+                </p>
+                <p className="text-xs text-gray-500">{userData?.grade}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile search input (shown conditionally) */}
+          {isSearchOpen && (
+            <div className="lg:hidden flex items-center bg-white p-2 rounded-md shadow-sm w-full">
               <FaSearch className="text-gray-500 mr-2" />
-              <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" />
+              <input
+                type="text"
+                placeholder="Search"
+                className="w-full outline-none bg-transparent"
+                autoFocus
+              />
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <FaUserCircle className="text-5xl text-gray-500" />
-            <div>
-              <p className="text-sm text-gray-700">
-                {userData?.firstName || "Loading..."} {userData?.lastName || ""}
-              </p>
-              <p className="text-xs text-gray-500">{userData?.grade}</p>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Page Content */}
