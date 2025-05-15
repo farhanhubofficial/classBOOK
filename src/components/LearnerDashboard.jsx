@@ -180,7 +180,7 @@ function LearnerDashboard() {
                       rel="noopener noreferrer"
                       className="inline-block text-green-600 hover:underline font-medium text-sm transition-colors"
                     >
-                      🔗 Open Meet in new tab
+                      🔗 Open Meet 
                     </a>
                   </div>
                 )}
