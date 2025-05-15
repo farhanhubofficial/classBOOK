@@ -73,12 +73,15 @@ function Signup() {
         category: formData.category,
         curriculum: formData.curriculum === "english" ? "English Course" : formData.curriculum || null,
         grade: formData.grade || null,
+        daysPresent: 0,
+        daysAbsent: 0,
+        courseDuration: 0,
       });
 
       if (role === "admin") {
         navigate("/admin");
       } else if (formData.category === "learner") {
-        navigate("/students");
+        navigate("/students/dashboard");
       } else {
         navigate("/");
       }
@@ -139,7 +142,6 @@ function Signup() {
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
 
-          {/* Category Selection */}
           <select
             name="category"
             value={formData.category}
@@ -153,7 +155,6 @@ function Signup() {
             <option value="parent">Parent</option>
           </select>
 
-          {/* Curriculum & Grade Selection - only if Learner */}
           {formData.category === "learner" && (
             <>
               <select

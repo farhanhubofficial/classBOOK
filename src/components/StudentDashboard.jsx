@@ -157,7 +157,7 @@ const StudentDashboard = () => {
     {isSearchOpen && (
       <div className="lg:hidden flex items-center bg-white p-2 rounded-md shadow-sm w-full">
         <FaSearch className="text-gray-500 mr-2" />
-        <input
+        <input 
           type="text"
           placeholder="Search"
           className="w-full outline-none bg-transparent"
