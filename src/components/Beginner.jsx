@@ -197,7 +197,7 @@ function Beginner() {
   };
 
   return (
-  <div className="w-full max-w-screen overflow-x-hidden relative mx-auto lg:px-4 sm:px-2 py-6">
+  <div className="w-full max-w-screen overflow-x-hidden relative  py-6">
 
 
       <div className="flex justify-around items-center mb-4">
