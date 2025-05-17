@@ -8,7 +8,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../firebase-config";
-import { FaEdit, FaTrashAlt, FaTimes } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaTimes, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 
 function Beginner() {
@@ -27,7 +27,14 @@ function Beginner() {
   const [selectedClassroom, setSelectedClassroom] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
   const [showStudentDetails, setShowStudentDetails] = useState(false);
+  const [expandedRows, setExpandedRows] = useState([]); // ✅ added state
   const navigate = useNavigate();
+
+  const toggleRow = (id) => { // ✅ added toggle function
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -181,11 +188,11 @@ function Beginner() {
 
   const handleClassroomClick = (classroom) => {
     setSelectedClassroom(classroom);
-    setShowStudentDetails(true);  // Open student details modal
+    setShowStudentDetails(true);
   };
 
   const handleClose = () => {
-    navigate("/admin/curriculum/english-course"); // Navigate back to the curriculum page
+    navigate("/admin/curriculum/english-course");
   };
 
   const handleModalClose = (e) => {
@@ -197,8 +204,7 @@ function Beginner() {
   };
 
   return (
-  <div className="w-full max-w-screen overflow-x-hidden relative  py-6">
-
+    <div className="w-full max-w-screen overflow-x-hidden relative py-6">
 
       <div className="flex justify-around items-center mb-4">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">{level}</h1>
@@ -256,44 +262,65 @@ function Beginner() {
         ))}
       </div>
 
-      {/* Make the table scrollable on smaller screens */}
-      {/* <div className=" mb-6">
+      <div className="mb-6">
         <table className="w-full table-auto border">
           <thead>
             <tr>
-              <th className="border px-4 py-2 text-xs sm:text-sm">Name</th>
-              <th className="border px-4 py-2 text-xs sm:text-sm">Email</th>
-              <th className="border px-4 py-2 text-xs sm:text-sm">Classroom</th>
-              <th className="border px-4 py-2 text-xs sm:text-sm">Actions</th>
+              <th className="border px-4 py-2 text-left text-xs sm:text-sm">Student Info</th>
             </tr>
           </thead>
           <tbody>
             {filteredStudents.map((s) => (
-              <tr key={s.id}>
-                <td className="border px-4 py-2 text-xs sm:text-sm">{s.firstName} {s.lastName}</td>
-                <td className="border px-4 py-2 text-xs sm:text-sm">{s.email}</td>
-                <td className="border px-4 py-2 text-xs sm:text-sm">{s.classroom || "Not assigned"}</td>
-                <td className="border px-4 py-2">
-                  <button
-                    className="text-green-600"
-                    onClick={() => handleStudentEdit(s)}
-                  >
-                    <FaEdit />
-                  </button>
-                  <button
-                    className="ml-2 text-red-600"
-                    onClick={() => handleStudentDelete(s.id)}
-                  >
-                    <FaTrashAlt />
-                  </button>
-                </td>
-              </tr>
+              <React.Fragment key={s.id}>
+                <tr className="border">
+                  <td className="px-4 py-2">
+                    <div
+                      className="flex items-center justify-between cursor-pointer"
+                      onClick={() => toggleRow(s.id)}
+                    >
+                      <span className="font-semibold text-sm sm:text-base">
+                        {s.firstName} {s.lastName}
+                      </span>
+                      {expandedRows.includes(s.id) ? (
+                        <FaChevronUp className="text-gray-500" />
+                      ) : (
+                        <FaChevronDown className="text-gray-500" />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+                {expandedRows.includes(s.id) && (
+                  <tr className="border">
+                    <td className="px-4 py-2 text-xs sm:text-sm bg-gray-50">
+                      <div className="mb-1">
+                        <strong>Email:</strong> {s.email}
+                      </div>
+                      <div className="mb-1">
+                        <strong>Classroom:</strong> {s.classroom || "Not assigned"}
+                      </div>
+                      <div className="mt-2">
+                        <button
+                          className="text-green-600 mr-2"
+                          onClick={() => handleStudentEdit(s)}
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          className="text-red-600"
+                          onClick={() => handleStudentDelete(s.id)}
+                        >
+                          <FaTrashAlt />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
-      </div> */}
+      </div>
 
-      {/* Classroom Student Details Modal */}
       {showStudentDetails && selectedClassroom && (
         <div
           className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
@@ -316,7 +343,6 @@ function Beginner() {
         </div>
       )}
 
-      {/* Modal Form for Classroom Registration/Editing */}
       {formOpen && (
         <div
           className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
@@ -383,7 +409,6 @@ function Beginner() {
         </div>
       )}
 
-      {/* Student Edit Modal */}
       {editingStudent && (
         <div
           className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
