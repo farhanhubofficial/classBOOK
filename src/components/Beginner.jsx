@@ -197,10 +197,7 @@ function Beginner() {
   };
 
   return (
-    <div className="max-w-full sm:max-w-6xl relative mx-auto px-4 py-6">
-
-
-
+    <div className="max-w-full sm:max-w-6xl relative mx-auto px-4 py-6 overflow-x-hidden">
 
       <div className="flex justify-around items-center mb-4">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">{level}</h1>
@@ -258,39 +255,42 @@ function Beginner() {
         ))}
       </div>
 
-      <table className="w-full table-auto border mb-6">
-        <thead>
-          <tr>
-            <th className="border px-4 py-2">Name</th>
-            <th className="border px-4 py-2">Email</th>
-            <th className="border px-4 py-2">Classroom</th>
-            <th className="border px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredStudents.map((s) => (
-            <tr key={s.id}>
-              <td className="border px-4 py-2">{s.firstName} {s.lastName}</td>
-              <td className="border px-4 py-2">{s.email}</td>
-              <td className="border px-4 py-2">{s.classroom || "Not assigned"}</td>
-              <td className="border px-4 py-2">
-                <button
-                  className="text-green-600"
-                  onClick={() => handleStudentEdit(s)}
-                >
-                  <FaEdit />
-                </button>
-                <button
-                  className="ml-2 text-red-600"
-                  onClick={() => handleStudentDelete(s.id)}
-                >
-                  <FaTrashAlt />
-                </button>
-              </td>
+      {/* Make the table scrollable on smaller screens */}
+      <div className="overflow-x-auto mb-6">
+        <table className="w-full table-auto border">
+          <thead>
+            <tr>
+              <th className="border px-4 py-2 text-xs sm:text-sm">Name</th>
+              <th className="border px-4 py-2 text-xs sm:text-sm">Email</th>
+              <th className="border px-4 py-2 text-xs sm:text-sm">Classroom</th>
+              <th className="border px-4 py-2 text-xs sm:text-sm">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredStudents.map((s) => (
+              <tr key={s.id}>
+                <td className="border px-4 py-2 text-xs sm:text-sm">{s.firstName} {s.lastName}</td>
+                <td className="border px-4 py-2 text-xs sm:text-sm">{s.email}</td>
+                <td className="border px-4 py-2 text-xs sm:text-sm">{s.classroom || "Not assigned"}</td>
+                <td className="border px-4 py-2">
+                  <button
+                    className="text-green-600"
+                    onClick={() => handleStudentEdit(s)}
+                  >
+                    <FaEdit />
+                  </button>
+                  <button
+                    className="ml-2 text-red-600"
+                    onClick={() => handleStudentDelete(s.id)}
+                  >
+                    <FaTrashAlt />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Classroom Student Details Modal */}
       {showStudentDetails && selectedClassroom && (
