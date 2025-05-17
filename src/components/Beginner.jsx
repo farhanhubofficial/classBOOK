@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import UploadAssignment from "./UploadAssignment"; // Adjust path if needed
+import UploadLesson from "./UploadLesson"; // Adjust path if needed
+
 import {
   collection,
   getDocs,
@@ -8,7 +11,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../firebase-config";
-import { FaEdit, FaTrashAlt, FaTimes, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaEdit, FaTrashAlt, FaTimes, FaChevronDown, FaUpload, FaFileAlt, FaBook, FaChevronUp } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 
 function Beginner() {
@@ -27,6 +30,9 @@ function Beginner() {
   const [selectedClassroom, setSelectedClassroom] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
   const [showStudentDetails, setShowStudentDetails] = useState(false);
+  const [uploadingAssignmentFor, setUploadingAssignmentFor] = useState(null);
+const [uploadingLessonFor, setUploadingLessonFor] = useState(null);
+
   const [expandedRows, setExpandedRows] = useState([]); // ✅ added state
   const navigate = useNavigate();
 
@@ -216,17 +222,7 @@ function Beginner() {
         </button>
       </div>
 
-      <div className="mb-6 flex justify-center">
-        <div className="relative w-full max-w-md">
-          <input
-            type="text"
-            className="w-full p-2 pl-10 pr-4 border rounded-lg"
-            placeholder="Search student"
-            onChange={handleSearchChange}
-            value={searchTerm}
-          />
-        </div>
-      </div>
+     
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
         {classrooms.map((classroom) => (
@@ -260,6 +256,17 @@ function Beginner() {
             </div>
           </div>
         ))}
+      </div>
+       <div className="mb-6 flex justify-center">
+        <div className="relative w-full max-w-md">
+          <input
+            type="text"
+            className="w-full p-2 pl-10 pr-4 border rounded-lg"
+            placeholder="Search student"
+            onChange={handleSearchChange}
+            value={searchTerm}
+          />
+        </div>
       </div>
 
       <div className="mb-6">
@@ -321,27 +328,59 @@ function Beginner() {
         </table>
       </div>
 
-      {showStudentDetails && selectedClassroom && (
-        <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
-          onClick={handleModalClose}
-        >
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Students in {selectedClassroom.name}</h2>
-            <ul>
-              {students.filter(student => student.classroom === selectedClassroom.name).map((student) => (
-                <li key={student.id} className="mb-2">{student.firstName} {student.lastName}</li>
-              ))}
-            </ul>
-            <button
-              className="bg-gray-600 text-white px-4 py-2 rounded"
-              onClick={() => setShowStudentDetails(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+    {showStudentDetails && selectedClassroom && (
+<div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay" onClick={handleModalClose}>
+  <div className="bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full flex flex-col sm:flex-row gap-8">
+      {/* Left side: student list */}
+      <div className="flex-1">
+        <h2 className="text-xl font-bold mb-4">Students in {selectedClassroom.name}</h2>
+        <ul className="max-h-96 overflow-y-auto">
+          {students
+            .filter((student) => student.classroom === selectedClassroom.name)
+            .map((student) => (
+              <li key={student.id} className="mb-2">
+                {student.firstName} {student.lastName}
+              </li>
+            ))}
+        </ul>
+      </div>
+
+      {/* Right side: action buttons */}
+      {/* Right side: action buttons */}
+<div className="flex-1">
+  <h2 className="text-xl font-bold mb-4">Classroom Actions</h2>
+  <div className="flex flex-col gap-4">
+    <button
+      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded shadow"
+      onClick={() => setUploadingAssignmentFor(selectedClassroom)}
+    >
+      <FaUpload /> Upload Assignment
+    </button>
+    <button
+      className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded shadow"
+      onClick={() => alert("Coming soon: View Submitted Assignments")}
+    >
+      <FaFileAlt /> View Submitted Assignments
+    </button>
+    <button
+      className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded shadow"
+      onClick={() => setUploadingLessonFor(selectedClassroom)}
+    >
+      <FaBook /> Upload Lesson
+    </button>
+  </div>
+  <button
+    className="mt-6 bg-gray-600 text-white px-4 py-2 rounded"
+    onClick={() => setShowStudentDetails(false)}
+  >
+    Close
+  </button>
+</div>
+
+    </div>
+  </div>
+)}
+
 
       {formOpen && (
         <div
@@ -469,6 +508,21 @@ function Beginner() {
           </div>
         </div>
       )}
+{uploadingAssignmentFor && (
+  <UploadAssignment
+    classroomName={uploadingAssignmentFor.name}
+    onClose={() => setUploadingAssignmentFor(null)}
+  />
+)}
+
+{uploadingLessonFor && (
+  <UploadLesson
+    classroomName={uploadingLessonFor.name}
+    onClose={() => setUploadingLessonFor(null)}
+  />
+)}
+
+
     </div>
   );
 }
