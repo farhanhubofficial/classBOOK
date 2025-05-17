@@ -298,7 +298,7 @@ function Beginner() {
                       <div className="mb-1">
                         <strong>Classroom:</strong> {s.classroom || "Not assigned"}
                       </div>
-                      <div className="mt-2">
+                      <div className="mt-2 flex justify-between">
                         <button
                           className="text-green-600 mr-2"
                           onClick={() => handleStudentEdit(s)}
