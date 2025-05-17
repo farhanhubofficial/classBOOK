@@ -198,19 +198,17 @@ function Beginner() {
 
   return (
     <div className="max-w-full sm:max-w-6xl relative mx-auto px-4 py-6">
- <button
-  className="text-red-600 absolute top-4 lg:ml-[90rem] sm:right-0  text-2xl"
-  onClick={handleClose}
->
-  <FaTimes />
-</button>
+      <button
+        className="text-red-600 absolute top-4 right-0 text-2xl"
+        onClick={handleClose}
+      >
+        <FaTimes />
+      </button>
 
-
-
-      <div className="flex justify-around items-center mb-4">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">{level}</h1>
+      <div className="flex justify-between sm:justify-around items-center mb-4">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-bold">{level}</h1>
         <button
-          className="bg-green-600 text-white px-6 py-3 rounded-full shadow-md"
+          className="bg-green-600 text-white px-6 py-2 sm:px-8 sm:py-3 rounded-full shadow-md"
           onClick={() => setFormOpen(true)}
         >
           Register Classroom
@@ -221,7 +219,7 @@ function Beginner() {
         <div className="relative w-full max-w-md">
           <input
             type="text"
-            className="w-full p-2 pl-10 pr-4 border rounded-lg"
+            className="w-full p-2 pl-10 pr-4 border rounded-lg text-sm sm:text-base"
             placeholder="Search student"
             onChange={handleSearchChange}
             value={searchTerm}
@@ -263,7 +261,7 @@ function Beginner() {
         ))}
       </div>
 
-      <table className="w-full table-auto border mb-6">
+      <table className="w-full table-auto border mb-6 text-sm sm:text-base">
         <thead>
           <tr>
             <th className="border px-4 py-2">Name</th>
