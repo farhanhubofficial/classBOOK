@@ -197,7 +197,8 @@ function Beginner() {
   };
 
   return (
-    <div className="max-w-full sm:max-w-6xl relative mx-auto px-4 py-6 overflow-x-hidden">
+  <div className="w-full max-w-screen overflow-x-hidden relative mx-auto px-4 py-6">
+
 
       <div className="flex justify-around items-center mb-4">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">{level}</h1>
