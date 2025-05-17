@@ -257,7 +257,7 @@ function Beginner() {
       </div>
 
       {/* Make the table scrollable on smaller screens */}
-      <div className=" mb-6">
+      {/* <div className=" mb-6">
         <table className="w-full table-auto border">
           <thead>
             <tr>
@@ -291,7 +291,7 @@ function Beginner() {
             ))}
           </tbody>
         </table>
-      </div>
+      </div> */}
 
       {/* Classroom Student Details Modal */}
       {showStudentDetails && selectedClassroom && (
