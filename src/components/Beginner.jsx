@@ -8,8 +8,8 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../firebase-config";
-import { FaEdit, FaTrashAlt, FaTimes } from "react-icons/fa"; // Import close icon
-import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
+import { FaEdit, FaTrashAlt, FaTimes } from "react-icons/fa"; 
+import { useNavigate } from 'react-router-dom'; 
 
 function Beginner() {
   const level = "A1 (Beginner)";
@@ -24,8 +24,10 @@ function Beginner() {
   });
   const [editingClassroom, setEditingClassroom] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClassroom, setSelectedClassroom] = useState(null); // Track selected classroom
-  const navigate = useNavigate(); // Initialize the navigate function
+  const [selectedClassroom, setSelectedClassroom] = useState(null); 
+  const [editingStudent, setEditingStudent] = useState(null);
+  const [showStudentDetails, setShowStudentDetails] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,7 +42,6 @@ function Beginner() {
       });
       setStudents(levelStudents);
     };
-
     fetchData();
   }, []);
 
@@ -54,7 +55,6 @@ function Beginner() {
       });
       setClassrooms(levelClassrooms);
     };
-
     fetchClassrooms();
   }, []);
 
@@ -139,7 +139,25 @@ function Beginner() {
   };
 
   const handleStudentEdit = (student) => {
-    alert(`Edit student: ${student.firstName}`);
+    setEditingStudent(student);
+  };
+
+  const handleStudentUpdate = async () => {
+    if (!editingStudent.firstName || !editingStudent.lastName || !editingStudent.email || !editingStudent.classroom) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    const studentRef = doc(db, "users", editingStudent.id);
+    await updateDoc(studentRef, {
+      firstName: editingStudent.firstName,
+      lastName: editingStudent.lastName,
+      email: editingStudent.email,
+      classroom: editingStudent.classroom,
+    });
+    alert("Student updated!");
+    setStudents(students.map((s) => (s.id === editingStudent.id ? editingStudent : s)));
+    setEditingStudent(null);
   };
 
   const handleStudentDelete = async (studentId) => {
@@ -163,29 +181,32 @@ function Beginner() {
 
   const handleClassroomClick = (classroom) => {
     setSelectedClassroom(classroom);
+    setShowStudentDetails(true);  // Open student details modal
   };
 
-  // Function to handle the close button
   const handleClose = () => {
-    navigate("/admin/curriculum/english-course"); // Navigate back to the curriculum page, excluding "beginner"
+    navigate("/admin/curriculum/english-course"); // Navigate back to the curriculum page
+  };
+
+  const handleModalClose = (e) => {
+    if (e.target.classList.contains("modal-overlay")) {
+      setFormOpen(false);
+      setEditingStudent(null);
+      setShowStudentDetails(false);
+    }
   };
 
   return (
     <div className="max-w-6xl relative mx-auto px-4 py-6">
+      <button
+        className="text-red-600 absolute top-4 ml-[80rem] text-2xl"
+        onClick={handleClose}
+      >
+        <FaTimes />
+      </button>
 
-     <button
-          className="text-red-600 absolute top-0 left-4 ml-[80rem] text-2xl"
-          onClick={handleClose}
-        >
-          <FaTimes />
-        </button>
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">{level}</h1>
-
-        {/* Close Button with FaTimes Icon */}
-       
-
-        {/* Register Classroom Button */}
+        <h1 className="text-2xl sm:text-3xl font-bold">{level}</h1>
         <button
           className="bg-green-600 text-white px-6 py-3 rounded-full shadow-md"
           onClick={() => setFormOpen(true)}
@@ -194,7 +215,6 @@ function Beginner() {
         </button>
       </div>
 
-      {/* Search Input */}
       <div className="mb-6 flex justify-center">
         <div className="relative w-full max-w-md">
           <input
@@ -204,26 +224,24 @@ function Beginner() {
             onChange={handleSearchChange}
             value={searchTerm}
           />
-          <i className="absolute left-3 top-2 text-gray-500 fas fa-search"></i>
         </div>
       </div>
 
-      {/* Classrooms Cards */}
-      <div className="grid grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
         {classrooms.map((classroom) => (
           <div
             key={classroom.name}
             className="border p-4 rounded-lg shadow-md hover:shadow-lg cursor-pointer"
             onClick={() => handleClassroomClick(classroom)}
           >
-            <h3 className="text-lg font-semibold">{classroom.name}</h3>
+            <h3 className="text-lg sm:text-xl font-semibold">{classroom.name}</h3>
             <p>Teacher: {classroom.teacher}</p>
             <p>Time: {classroom.time}</p>
             <div className="flex justify-between mt-2">
               <button
                 className="text-green-600"
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevents triggering classroom click event
+                  e.stopPropagation();
                   handleEdit(classroom);
                 }}
               >
@@ -232,7 +250,7 @@ function Beginner() {
               <button
                 className="text-red-600"
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevents triggering classroom click event
+                  e.stopPropagation();
                   handleDelete(classroom.name);
                 }}
               >
@@ -243,8 +261,7 @@ function Beginner() {
         ))}
       </div>
 
-      {/* Students Table */}
-      <table className="w-full table-auto border">
+      <table className="w-full table-auto border mb-6">
         <thead>
           <tr>
             <th className="border px-4 py-2">Name</th>
@@ -278,9 +295,35 @@ function Beginner() {
         </tbody>
       </table>
 
-      {/* Modal Form */}
+      {/* Classroom Student Details Modal */}
+      {showStudentDetails && selectedClassroom && (
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
+          onClick={handleModalClose}
+        >
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Students in {selectedClassroom.name}</h2>
+            <ul>
+              {students.filter(student => student.classroom === selectedClassroom.name).map((student) => (
+                <li key={student.id} className="mb-2">{student.firstName} {student.lastName}</li>
+              ))}
+            </ul>
+            <button
+              className="bg-gray-600 text-white px-4 py-2 rounded"
+              onClick={() => setShowStudentDetails(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Form for Classroom Registration/Editing */}
       {formOpen && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
+          onClick={handleModalClose}
+        >
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h2 className="text-xl font-bold mb-4">{editingClassroom ? "Edit Classroom" : "Register Classroom"}</h2>
             <input
@@ -342,26 +385,63 @@ function Beginner() {
         </div>
       )}
 
-      {/* Classroom Details Popup */}
-      {selectedClassroom && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+      {/* Student Edit Modal */}
+      {editingStudent && (
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
+          onClick={handleModalClose}
+        >
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">{selectedClassroom.name} Students</h2>
-            <ul>
-              {students
-                .filter((student) => student.classroom === selectedClassroom.name)
-                .map((student) => (
-                  <li key={student.id} className="mb-2">
-                    <p>Name: {student.firstName} {student.lastName}</p>
-                    <p>Email: {student.email}</p>
-                  </li>
-                ))}
-            </ul>
-            <button
-              className="mt-4 bg-gray-600 text-white px-4 py-2 rounded"
-              onClick={() => setSelectedClassroom(null)}
+            <h2 className="text-xl font-bold mb-4">Edit Student</h2>
+            <input
+              type="text"
+              name="firstName"
+              placeholder="First Name"
+              className="w-full p-2 border rounded mb-2"
+              onChange={(e) => setEditingStudent({ ...editingStudent, firstName: e.target.value })}
+              value={editingStudent.firstName}
+            />
+            <input
+              type="text"
+              name="lastName"
+              placeholder="Last Name"
+              className="w-full p-2 border rounded mb-2"
+              onChange={(e) => setEditingStudent({ ...editingStudent, lastName: e.target.value })}
+              value={editingStudent.lastName}
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              className="w-full p-2 border rounded mb-2"
+              onChange={(e) => setEditingStudent({ ...editingStudent, email: e.target.value })}
+              value={editingStudent.email}
+            />
+            <select
+              className="w-full p-2 border rounded mb-2"
+              onChange={(e) => setEditingStudent({ ...editingStudent, classroom: e.target.value })}
+              value={editingStudent.classroom}
             >
-              Close
+              <option disabled>Current Classroom: {editingStudent.classroom || "Not assigned"}</option>
+              {classrooms.map((classroom) => (
+                <option key={classroom.id} value={classroom.name}>
+                  {classroom.name}
+                </option>
+              ))}
+            </select>
+
+            <button
+              className="bg-green-600 text-white px-4 py-2 rounded mr-2"
+              onClick={handleStudentUpdate}
+            >
+              Update
+            </button>
+
+            <button
+              className="bg-gray-600 text-white px-4 py-2 rounded"
+              onClick={() => setEditingStudent(null)}
+            >
+              Cancel
             </button>
           </div>
         </div>
