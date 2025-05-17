@@ -8,8 +8,8 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../firebase-config";
-import { FaEdit, FaTrashAlt, FaTimes } from "react-icons/fa"; 
-import { useNavigate } from 'react-router-dom'; 
+import { FaEdit, FaTrashAlt, FaTimes } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
 
 function Beginner() {
   const level = "A1 (Beginner)";
@@ -24,7 +24,7 @@ function Beginner() {
   });
   const [editingClassroom, setEditingClassroom] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClassroom, setSelectedClassroom] = useState(null); 
+  const [selectedClassroom, setSelectedClassroom] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
   const [showStudentDetails, setShowStudentDetails] = useState(false);
   const navigate = useNavigate();
@@ -197,16 +197,18 @@ function Beginner() {
   };
 
   return (
-    <div className="max-w-6xl relative mx-auto px-4 py-6">
-      <button
-        className="text-red-600 absolute top-4 ml-[80rem] text-2xl"
-        onClick={handleClose}
-      >
-        <FaTimes />
-      </button>
+    <div className="max-w-full sm:max-w-6xl relative mx-auto px-4 py-6">
+ <button
+  className="text-red-600 absolute top-4 lg:ml-[90rem] sm:right-0  text-2xl"
+  onClick={handleClose}
+>
+  <FaTimes />
+</button>
 
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl sm:text-3xl font-bold">{level}</h1>
+
+
+      <div className="flex justify-around items-center mb-4">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">{level}</h1>
         <button
           className="bg-green-600 text-white px-6 py-3 rounded-full shadow-md"
           onClick={() => setFormOpen(true)}
@@ -324,7 +326,7 @@ function Beginner() {
           className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
           onClick={handleModalClose}
         >
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96">
             <h2 className="text-xl font-bold mb-4">{editingClassroom ? "Edit Classroom" : "Register Classroom"}</h2>
             <input
               type="text"
