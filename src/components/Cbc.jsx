@@ -236,6 +236,154 @@ const Cbc = () => {
           ➕ Register New Grade Subject
         </button>
       </div>
+      <div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div>
+      <div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div>
+      <div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div>
+      <div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div>
+      <div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div><div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div><div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div><div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div><div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div><div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div><div className="text-right">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
+        >
+          ➕ Add New CBC Topic
+        </button>
+        <button
+          onClick={() => setShowSubjectModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
+        >
+          ➕ Register New Grade Subject
+        </button>
+      </div>
 
       {/* Grade Selection */}
       {!selectedGrade && (
