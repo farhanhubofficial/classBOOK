@@ -308,12 +308,7 @@ function Beginner() {
                 <li key={student.id} className="mb-2">{student.firstName} {student.lastName}</li>
               ))}
             </ul>
-            <button
-              className="bg-gray-600 text-white px-4 py-2 rounded"
-              onClick={() => setShowStudentDetails(false)}
-            >
-              Close
-            </button>
+         
           </div>
         </div>
       )}
