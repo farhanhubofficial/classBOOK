@@ -17,6 +17,9 @@ import DashboardHome from './DashboardHome';
 // New pages for nested student routes
 import StudentSubjects from './StudentSubjects';
 import SubjectVideos from './SubjectVideos';
+import Lessons from './Lessons'
+import EnglishClass from './EnglishClass';
+import Beginner from "./Beginner"
 
 function Connectivity() {
   const location = useLocation();
@@ -38,6 +41,8 @@ function Connectivity() {
         <Route path="/admin" element={<AdminDashboard />}>
           <Route path="dashboard" element={<DashboardHome />} />
           <Route path="curriculum/cbc" element={<Cbc />} />
+          <Route path="curriculum/english-course" element={<EnglishClass />} />
+          <Route path ="curriculum/english-course/beginner"  element ={<Beginner />}  />
         </Route>
 
         {/* Student Routes */}
@@ -46,6 +51,7 @@ function Connectivity() {
           <Route path="subjects" element={<StudentSubjects />} />
           <Route path="subjects/:subject" element={<SubjectVideos />} />
           <Route path="settings" element={<div>Student Settings Page</div>} />
+          <Route path = "lessons"  element = {<Lessons/>}         />
         </Route>
       </Routes>
     </>

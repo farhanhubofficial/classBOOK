@@ -167,7 +167,7 @@ function LearnerDashboard() {
                 <textarea
                   rows={2}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none text-gray-700 placeholder-gray-400"
-                  placeholder="Find your Google Meet link here..."
+                  placeholder="F ind your Google Meet link here..."
                   value={googleMeetLink}
                   onChange={(e) => setGoogleMeetLink(e.target.value)}
                 />
