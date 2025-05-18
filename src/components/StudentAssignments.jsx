@@ -10,32 +10,29 @@ function StudentAssignments({ studentId, classroomName }) {
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        console.log("Fetching assignments for student:", studentId);
-
+        // Fetch the specific student document by studentId
         const studentRef = doc(db, "users", studentId);
         const studentSnap = await getDoc(studentRef);
 
-        if (!studentSnap.exists()) {
-          setError("Student not found.");
-          return;
+        if (studentSnap.exists()) {
+          const studentData = studentSnap.data();
+
+          // Check if student has assignments
+          if (studentData.assignments) {
+            // Filter assignments based on the classroom name
+            const classroomAssignments = studentData.assignments.filter(
+              assignment => assignment.classroom === classroomName
+            );
+            setAssignments(classroomAssignments);
+          } else {
+            setError("No assignments found for this student.");
+          }
+        } else {
+          setError("Student not found");
         }
-
-        const studentData = studentSnap.data();
-        const allAssignments = studentData.assignments || [];
-
-        // Safely filter only those assignments with classroom and match
-        const filteredAssignments = allAssignments.filter(
-          (assignment) =>
-            assignment &&
-            assignment.classroom && 
-            assignment.classroom === classroomName
-        );
-
-        console.log("Filtered Assignments:", filteredAssignments);
-        setAssignments(filteredAssignments);
       } catch (err) {
+        setError("Failed to fetch assignments");
         console.error("Error fetching assignments:", err);
-        setError("Failed to fetch assignments.");
       } finally {
         setLoading(false);
       }
@@ -45,7 +42,7 @@ function StudentAssignments({ studentId, classroomName }) {
   }, [studentId, classroomName]);
 
   if (loading) return <p className="text-center text-gray-500">Loading assignments...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (error) return <p className="text-center text-gray-500">{error}</p>;
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
