@@ -34,13 +34,16 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
       if (currentUser) {
+        setUser(currentUser);
         const userRef = doc(db, "users", currentUser.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           setUserData(userSnap.data());
         }
+      } else {
+        setUser(null);
+        setUserData(null);
       }
     });
     return () => unsubscribe();
@@ -125,9 +128,9 @@ const AdminDashboard = () => {
                 <button onClick={() => navigate("/admin/curriculum/cbc")} className="block hover:text-green-600">CBC</button>
                 <button onClick={() => navigate("/admin/curriculum/igcse")} className="block hover:text-green-600">IGCSE</button>
                 <button onClick={() => navigate("/admin/curriculum/english-course")} className="block hover:text-green-600">English Course</button>
-                <button onClick={() => navigate("/admin/curriculum/igcse")} className="block hover:text-green-600">Arabic Course</button>
-                <button onClick={() => navigate("/admin/curriculum/igcse")} className="block hover:text-green-600">Kiswahili Course</button>
-                   <button onClick={() => navigate("/admin/curriculum/igcse")} className="block hover:text-green-600">Somali  Course</button>
+                <button onClick={() => navigate("/admin/curriculum/arabic-course")} className="block hover:text-green-600">Arabic Course</button>
+                <button onClick={() => navigate("/admin/curriculum/kiswahili-course")} className="block hover:text-green-600">Kiswahili Course</button>
+                <button onClick={() => navigate("/admin/curriculum/somali-course")} className="block hover:text-green-600">Somali Course</button>
               </div>
             )}
           </div>

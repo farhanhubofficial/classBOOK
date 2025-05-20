@@ -5,7 +5,7 @@ import { MdSubject, MdExitToApp, MdAssessment, MdDescription, MdClose } from "re
 import { GiSpellBook } from "react-icons/gi";
 import { IoMdMenu } from "react-icons/io";
 import { RiFileList3Line } from "react-icons/ri";
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
 import { useNavigate, Outlet } from "react-router-dom";
@@ -14,6 +14,7 @@ const StudentDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userData, setUserData] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [loading, setLoading] = useState(true);  // Track loading state
   const sidebarRef = useRef(null);
   const navigate = useNavigate();
   const auth = getAuth();
@@ -30,18 +31,23 @@ const StudentDashboard = () => {
   };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const currentUser = auth.currentUser;
+    // Listen to auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const userRef = doc(db, "users", currentUser.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           setUserData(userSnap.data());
         }
+        setLoading(false); // Set loading to false after fetching user data
+      } else {
+        setLoading(false); // Set loading to false if no user is logged in
+        navigate("/login");
       }
-    };
-    fetchUserData();
-  }, [auth]);
+    });
+
+    return () => unsubscribe(); // Cleanup the listener on component unmount
+  }, [auth, navigate]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -53,6 +59,14 @@ const StudentDashboard = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSidebarOpen]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-white text-gray-900 overflow-hidden">
@@ -76,7 +90,7 @@ const StudentDashboard = () => {
           </h2>
           <p className="text-sm text-gray-600">{userData?.category || "Loading..."}</p>
           <p className="text-sm text-gray-600 uppercase font-bold">{userData?.curriculum}</p>
-             <p className="text-sm text-gray-600 lowercase font-semibold">{userData?.classroom}</p>
+          <p className="text-sm text-gray-600 lowercase font-semibold">{userData?.classroom}</p>
         </div>
         <nav className="mt-10 space-y-3 pb-10">
           <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/dashboard")}>
@@ -124,56 +138,55 @@ const StudentDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 overflow-y-auto h-screen">
-  {/* Top Bar */}
-  <div className="sticky top-0 z-30 bg-gray-50 p-3 rounded-md shadow-sm flex flex-col gap-2">
-    <div className="flex flex-wrap justify-between items-center gap-3 sm:gap-6">
-      <div className="flex items-center gap-3 flex-shrink">
-        <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
+        {/* Top Bar */}
+        <div className="sticky top-0 z-30 bg-gray-50 p-3 rounded-md shadow-sm flex flex-col gap-2">
+          <div className="flex flex-wrap justify-between items-center gap-3 sm:gap-6">
+            <div className="flex items-center gap-3 flex-shrink">
+              <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
 
-        {/* Desktop search input */}
-        <div className="hidden lg:flex items-center bg-white p-2 rounded-md shadow-sm w-full lg:w-2/3">
-          <FaSearch className="text-gray-500 mr-2" />
-          <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" />
+              {/* Desktop search input */}
+              <div className="hidden lg:flex items-center bg-white p-2 rounded-md shadow-sm w-full lg:w-2/3">
+                <FaSearch className="text-gray-500 mr-2" />
+                <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" />
+              </div>
+
+              {/* Mobile search icon */}
+              <FaSearch
+                className="text-2xl text-gray-500 cursor-pointer lg:hidden"
+                onClick={() => setIsSearchOpen((prev) => !prev)}
+              />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <FaUserCircle className="text-5xl text-gray-500" />
+              <div>
+                <p className="text-sm text-gray-700">
+                  {userData?.firstName || "Loading..."} {userData?.lastName || ""}
+                </p>
+                <p className="text-xs text-gray-500">{userData?.grade}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile search input (shown conditionally) */}
+          {isSearchOpen && (
+            <div className="lg:hidden flex items-center bg-white p-2 rounded-md shadow-sm w-full">
+              <FaSearch className="text-gray-500 mr-2" />
+              <input
+                type="text"
+                placeholder="Search"
+                className="w-full outline-none bg-transparent"
+                autoFocus
+              />
+            </div>
+          )}
         </div>
 
-        {/* Mobile search icon */}
-        <FaSearch
-          className="text-2xl text-gray-500 cursor-pointer lg:hidden"
-          onClick={() => setIsSearchOpen((prev) => !prev)}
-        />
-      </div>
-
-      <div className="flex items-center gap-3">
-        <FaUserCircle className="text-5xl text-gray-500" />
-        <div>
-          <p className="text-sm text-gray-700">
-            {userData?.firstName || "Loading..."} {userData?.lastName || ""}
-          </p>
-          <p className="text-xs text-gray-500">{userData?.grade}</p>
+        {/* Page Content */}
+        <div className="mt-5 p-5 bg-gray-50 rounded-lg shadow-md h-full">
+          <Outlet />
         </div>
-      </div>
-    </div>
-
-    {/* Mobile search input (shown conditionally) */}
-    {isSearchOpen && (
-      <div className="lg:hidden flex items-center bg-white p-2 rounded-md shadow-sm w-full">
-        <FaSearch className="text-gray-500 mr-2" />
-        <input 
-          type="text"
-          placeholder="Search"
-          className="w-full outline-none bg-transparent"
-          autoFocus
-        />
-      </div>
-    )}
-  </div>
-
-  {/* Page Content */}
-  <div className="mt-5 p-5 bg-gray-50 rounded-lg shadow-md h-full">
-    <Outlet />
-  </div>
-</main>
-
+      </main>
     </div>
   );
 };
