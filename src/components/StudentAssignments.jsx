@@ -1,95 +1,108 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../firebase-config";
-import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase-config";
+import {
+  collection,
+  getDoc,
+  getDocs,
+  doc,
+  query,
+  where,
+} from "firebase/firestore";
 
-function StudentAssignments({ studentId, classroomName }) {
+function StudentAssignments() {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [studentInfo, setStudentInfo] = useState(null);
 
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        // Fetch the specific student document by studentId
-        const studentRef = doc(db, "users", studentId);
-        const studentSnap = await getDoc(studentRef);
-
-        if (studentSnap.exists()) {
-          const studentData = studentSnap.data();
-
-          // Check if student has assignments
-          if (studentData.assignments) {
-            // Filter assignments based on the classroom name
-            const classroomAssignments = studentData.assignments.filter(
-              assignment => assignment.classroom === classroomName
-            );
-            setAssignments(classroomAssignments);
-          } else {
-            setError("No assignments found for this student.");
-          }
-        } else {
-          setError("Student not found");
+        const user = auth.currentUser;
+        if (!user) {
+          console.warn("User not logged in");
+          return;
         }
-      } catch (err) {
-        setError("Failed to fetch assignments");
-        console.error("Error fetching assignments:", err);
+
+        // 1. Get student's classroom
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+          console.error("User document not found");
+          return;
+        }
+
+        const userData = userSnap.data();
+        const { classroom, firstName, lastName } = userData;
+
+        setStudentInfo({ firstName, lastName, classroom });
+
+        if (!classroom) {
+          console.warn("No classroom assigned to this user.");
+          return;
+        }
+
+        // 2. Fetch assignments that match classroom
+        const assignmentQuery = query(
+          collection(db, "assignments"),
+          where("classroom", "==", classroom)
+        );
+
+        const snapshot = await getDocs(assignmentQuery);
+        const assignmentsList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setAssignments(assignmentsList);
+      } catch (error) {
+        console.error("Error fetching assignments:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAssignments();
-  }, [studentId, classroomName]);
-
-  if (loading) return <p className="text-center text-gray-500">Loading assignments...</p>;
-  if (error) return <p className="text-center text-gray-500">{error}</p>;
+  }, []);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-10">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800 text-center">
-        My Assignments
+    <div className="p-6 max-w-5xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">
+        {studentInfo
+          ? `Assignments for ${studentInfo.classroom}`
+          : "Your Assignments"}
       </h2>
 
-      {assignments.length === 0 ? (
-        <p className="text-center text-gray-500">No assignments found for this classroom.</p>
+      {loading ? (
+        <p className="text-gray-500">Loading assignments...</p>
+      ) : assignments.length === 0 ? (
+        <p className="text-gray-500">No assignments available.</p>
       ) : (
-        <div className="space-y-6">
-          {assignments.map((assignment, idx) => (
+        <div className="grid gap-4">
+          {assignments.map((assignment) => (
             <div
-              key={idx}
-              className="border border-gray-200 rounded-md p-5 hover:shadow-md transition duration-200"
+              key={assignment.id}
+              className="border p-4 rounded-lg shadow-sm bg-white"
             >
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold">
                 {assignment.title}
               </h3>
-
+              <p className="text-sm text-gray-600 mb-2">
+                Posted on: {new Date(assignment.date).toLocaleDateString()}
+              </p>
               {assignment.content && (
-                <p className="text-gray-700 mb-3 whitespace-pre-line">
-                  {assignment.content}
-                </p>
+                <p className="text-gray-800 mb-2">{assignment.content}</p>
               )}
-
-              {assignment.files && assignment.files.length > 0 && (
-                <div className="mb-3">
-                  <h4 className="font-semibold text-gray-800 mb-1">
-                    Attached Files:
-                  </h4>
-                  <ul className="list-disc list-inside text-blue-600">
-                    {assignment.files.map((fileName, index) => (
-                      <li key={index}>{fileName}</li>
+              {assignment.files.length > 0 && (
+                <div>
+                  <p className="font-medium">Files:</p>
+                  <ul className="list-disc ml-6 text-sm text-blue-600">
+                    {assignment.files.map((filename, index) => (
+                      <li key={index}>{filename}</li>
                     ))}
                   </ul>
                 </div>
               )}
-
-              <div className="text-sm text-gray-500">
-                Assigned on:{" "}
-                {new Date(assignment.date).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </div>
             </div>
           ))}
         </div>
