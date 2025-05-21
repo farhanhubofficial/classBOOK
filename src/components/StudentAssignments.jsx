@@ -39,17 +39,30 @@ function StudentAssignments() {
         setStudentName(fullName);
         setStudentClassroom(classroomName);
 
+        // Fetch assignments
         const assignmentsRef = collection(db, "assignments");
         const q = query(assignmentsRef, where("classroom", "==", classroomName));
         const snapshot = await getDocs(q);
-
         const filteredAssignments = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
         filteredAssignments.sort((a, b) => new Date(b.date) - new Date(a.date));
         setAssignments(filteredAssignments);
+
+        // Fetch submitted answers
+        const assignmentAnswersRef = collection(db, "assignmentAnswers");
+        const answersQuery = query(
+          assignmentAnswersRef,
+          where("studentName", "==", fullName),
+          where("submitted", "==", true)
+        );
+        const answersSnapshot = await getDocs(answersQuery);
+
+        const submittedIds = answersSnapshot.docs.map(
+          (doc) => doc.data().assignmentId
+        );
+        setSubmittedAssignments(submittedIds);
       } catch (error) {
         console.error("Error fetching assignments:", error.message);
       } finally {
@@ -81,6 +94,11 @@ function StudentAssignments() {
       return;
     }
 
+    if (submittedAssignments.includes(assignment.id)) {
+      alert("You have already submitted an answer for this assignment.");
+      return;
+    }
+
     const answerData = {
       answerText,
       assignmentId: assignment.id,
@@ -91,15 +109,18 @@ function StudentAssignments() {
       questionContent: assignment.content || "",
       studentName,
       submittedAt: new Date().toISOString(),
+      submitted: true,
     };
 
     try {
       await addDoc(collection(db, "assignmentAnswers"), answerData);
+
       setSubmittedAssignments((prev) => [...prev, assignment.id]);
       setAnswerForms((prev) => ({
         ...prev,
         [assignment.id]: { open: false, text: "" },
       }));
+
       alert("Answer submitted successfully.");
     } catch (error) {
       console.error("Error submitting answer:", error.message);
@@ -108,26 +129,39 @@ function StudentAssignments() {
   };
 
   if (loading) return <p>Loading assignments...</p>;
-  if (!studentClassroom) return <p>No classroom assigned or user not authenticated.</p>;
-  if (assignments.length === 0) return <p>No assignments available for your classroom.</p>;
+  if (!studentClassroom)
+    return <p>No classroom assigned or user not authenticated.</p>;
+  if (assignments.length === 0)
+    return <p>No assignments available for your classroom.</p>;
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Assignments for {studentClassroom}</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        Assignments for {studentClassroom}
+      </h1>
 
       {assignments.map((assignment) => {
         const isExpanded = expandedContent[assignment.id];
         const isSubmitted = submittedAssignments.includes(assignment.id);
-        const answerState = answerForms[assignment.id] || { open: false, text: "" };
+        const answerState = answerForms[assignment.id] || {
+          open: false,
+          text: "",
+        };
 
-        const contentToShow = isExpanded || assignment.content.length < 200
-          ? assignment.content
-          : assignment.content.substring(0, 200) + "...";
+        const contentToShow =
+          isExpanded || assignment.content.length < 200
+            ? assignment.content
+            : assignment.content.substring(0, 200) + "...";
 
         return (
-          <div key={assignment.id} className="border rounded-md p-5 mb-6 shadow-sm bg-white">
+          <div
+            key={assignment.id}
+            className="border rounded-md p-5 mb-6 shadow-sm bg-white"
+          >
             <h3 className="text-xl font-bold text-blue-700 mb-2">
-              {assignment.writtenTitle || assignment.fileTitle || "Untitled Assignment"}
+              {assignment.writtenTitle ||
+                assignment.fileTitle ||
+                "Untitled Assignment"}
             </h3>
 
             <p className="mb-3 text-gray-700 whitespace-pre-wrap">
@@ -168,7 +202,7 @@ function StudentAssignments() {
               <span className="text-green-600 font-semibold">Submitted</span>
             )}
 
-            {answerState.open && (
+            {answerState.open && !isSubmitted && (
               <div className="mt-4 border-t pt-4">
                 <textarea
                   className="w-full border border-gray-300 rounded p-3 mb-3 min-h-[120px]"
