@@ -87,46 +87,55 @@ function StudentAssignments() {
     }));
   };
 
-  const handleAnswerSubmit = async (assignment) => {
-    const answerText = answerForms[assignment.id]?.text?.trim();
-    if (!answerText) {
-      alert("Answer cannot be empty.");
-      return;
-    }
+const handleAnswerSubmit = async (assignment) => {
+  const answerText = answerForms[assignment.id]?.text?.trim();
+  if (!answerText) {
+    alert("Answer cannot be empty.");
+    return;
+  }
 
-    if (submittedAssignments.includes(assignment.id)) {
-      alert("You have already submitted an answer for this assignment.");
-      return;
-    }
+  // Check if an answer with the same content already exists for this assignment
+  const existingAnswerQuery = query(
+    collection(db, "assignmentAnswers"),
+    where("assignmentId", "==", assignment.id),
+    where("answerText", "==", answerText),
+    where("studentName", "==", studentName),
+    where("classroom", "==", studentClassroom)
+  );
+  const existingAnswerSnapshot = await getDocs(existingAnswerQuery);
 
-    const answerData = {
-      answerText,
-      assignmentId: assignment.id,
-      classroom: assignment.classroom,
-      files: [],
-      questionTitle:
-        assignment.writtenTitle || assignment.fileTitle || "Untitled",
-      questionContent: assignment.content || "",
-      studentName,
-      submittedAt: new Date().toISOString(),
-      submitted: true,
-    };
+  if (!existingAnswerSnapshot.empty) {
+    alert("You have already submitted this answer.");
+    return;
+  }
 
-    try {
-      await addDoc(collection(db, "assignmentAnswers"), answerData);
-
-      setSubmittedAssignments((prev) => [...prev, assignment.id]);
-      setAnswerForms((prev) => ({
-        ...prev,
-        [assignment.id]: { open: false, text: "" },
-      }));
-
-      alert("Answer submitted successfully.");
-    } catch (error) {
-      console.error("Error submitting answer:", error.message);
-      alert("Failed to submit answer.");
-    }
+  const answerData = {
+    answerText,
+    assignmentId: assignment.id,
+    classroom: assignment.classroom,
+    files: [], // Handle file uploads if necessary
+    questionTitle: assignment.writtenTitle || assignment.fileTitle || "Untitled",
+    questionContent: assignment.content || "",
+    studentName,
+    email: currentUser.email, // Ensure currentUser is defined
+    submittedAt: new Date().toISOString(),
+    submitted: true,
   };
+
+  try {
+    await addDoc(collection(db, "assignmentAnswers"), answerData);
+    setSubmittedAssignments((prev) => [...prev, assignment.id]);
+    setAnswerForms((prev) => ({
+      ...prev,
+      [assignment.id]: { open: false, text: "" },
+    }));
+    alert("Answer submitted successfully.");
+  } catch (error) {
+    console.error("Error submitting answer:", error.message);
+    alert("Failed to submit answer.");
+  }
+};
+
 
   if (loading) return <p>Loading assignments...</p>;
   if (!studentClassroom)
@@ -140,109 +149,102 @@ function StudentAssignments() {
         Assignments for {studentClassroom}
       </h1>
 
-      {assignments.map((assignment) => {
-        const isExpanded = expandedContent[assignment.id];
-        const isSubmitted = submittedAssignments.includes(assignment.id);
-        const answerState = answerForms[assignment.id] || {
-          open: false,
-          text: "",
-        };
+    {assignments.map((assignment) => {
+  const isExpanded = expandedContent[assignment.id];
+  const isSubmitted = submittedAssignments.includes(assignment.id);
+  const answerState = answerForms[assignment.id] || { open: false, text: "" };
 
-        const contentToShow =
-          isExpanded || assignment.content.length < 200
-            ? assignment.content
-            : assignment.content.substring(0, 200) + "...";
+  const contentToShow =
+    isExpanded || assignment.content.length < 200
+      ? assignment.content
+      : assignment.content.substring(0, 200) + "...";
 
-        return (
-          <div
-            key={assignment.id}
-            className="border rounded-md p-5 mb-6 shadow-sm bg-white"
+  return (
+    <div key={assignment.id} className="border rounded-md p-5 mb-6 shadow-sm bg-white">
+      <h3 className="text-xl font-bold text-blue-700 mb-2">
+        {assignment.writtenTitle || assignment.fileTitle || "Untitled Assignment"}
+      </h3>
+
+      <p className="mb-3 text-gray-700 whitespace-pre-wrap">
+        <strong>Content:</strong> {contentToShow}
+        {assignment.content.length > 200 && (
+          <button
+            className="text-blue-500 ml-2"
+            onClick={() => toggleContent(assignment.id)}
           >
-            <h3 className="text-xl font-bold text-blue-700 mb-2">
-              {assignment.writtenTitle ||
-                assignment.fileTitle ||
-                "Untitled Assignment"}
-            </h3>
+            {isExpanded ? "See Less" : "See More"}
+          </button>
+        )}
+      </p>
 
-            <p className="mb-3 text-gray-700 whitespace-pre-wrap">
-              <strong>Content:</strong> {contentToShow}
-              {assignment.content.length > 200 && (
-                <button
-                  className="text-blue-500 ml-2"
-                  onClick={() => toggleContent(assignment.id)}
-                >
-                  {isExpanded ? "See Less" : "See More"}
-                </button>
-              )}
-            </p>
+      {assignment.files && assignment.files.length > 0 && (
+        <div className="mb-2">
+          <strong>Attached Files:</strong>
+          <ul className="list-disc list-inside text-gray-600">
+            {assignment.files.map((fileName, idx) => (
+              <li key={idx}>{fileName}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
-            {assignment.files && assignment.files.length > 0 && (
-              <div className="mb-2">
-                <strong>Attached Files:</strong>
-                <ul className="list-disc list-inside text-gray-600">
-                  {assignment.files.map((fileName, idx) => (
-                    <li key={idx}>{fileName}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      <p className="text-sm text-gray-500 mb-4">
+        Posted on: {new Date(assignment.date).toLocaleString()}
+      </p>
 
-            <p className="text-sm text-gray-500 mb-4">
-              Posted on: {new Date(assignment.date).toLocaleString()}
-            </p>
+      {!isSubmitted ? (
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={() => toggleAnswerForm(assignment.id)}
+        >
+          {answerState.open ? "Cancel" : "Answer"}
+        </button>
+      ) : (
+        <span className="text-green-600 font-semibold">Submitted</span>
+      )}
 
-            {!isSubmitted ? (
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded"
-                onClick={() => toggleAnswerForm(assignment.id)}
-              >
-                {answerState.open ? "Cancel" : "Answer"}
-              </button>
-            ) : (
-              <span className="text-green-600 font-semibold">Submitted</span>
-            )}
-
-            {answerState.open && !isSubmitted && (
-              <div className="mt-4 border-t pt-4">
-                <textarea
-                  className="w-full border border-gray-300 rounded p-3 mb-3 min-h-[120px]"
-                  placeholder="Write your answer here..."
-                  value={answerState.text || ""}
-                  onChange={(e) =>
-                    setAnswerForms((prev) => ({
-                      ...prev,
-                      [assignment.id]: {
-                        ...prev[assignment.id],
-                        text: e.target.value,
-                        open: true,
-                      },
-                    }))
-                  }
-                />
-                <div className="flex gap-4 justify-end">
-                  <button
-                    className="px-4 py-2 bg-gray-400 text-white rounded"
-                    onClick={() =>
-                      setAnswerForms((prev) => ({
-                        ...prev,
-                        [assignment.id]: { open: false, text: "" },
-                      }))
-                    }
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-green-600 text-white rounded"
-                    onClick={() => handleAnswerSubmit(assignment)}
-                  >
-                    Submit Answer
-                  </button>
-                </div>
-              </div>
-            )}
+      {answerState.open && !isSubmitted && (
+        <div className="mt-4 border-t pt-4">
+          <textarea
+            className="w-full border border-gray-300 rounded p-3 mb-3 min-h-[120px]"
+            placeholder="Write your answer here..."
+            value={answerState.text || ""}
+            onChange={(e) =>
+              setAnswerForms((prev) => ({
+                ...prev,
+                [assignment.id]: {
+                  ...prev[assignment.id],
+                  text: e.target.value,
+                  open: true,
+                },
+              }))
+            }
+          />
+          <div className="flex gap-4 justify-end">
+            <button
+              className="px-4 py-2 bg-gray-400 text-white rounded"
+              onClick={() =>
+                setAnswerForms((prev) => ({
+                  ...prev,
+                  [assignment.id]: { open: false, text: "" },
+                }))
+              }
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-green-600 text-white rounded"
+              onClick={() => handleAnswerSubmit(assignment)}
+            >
+              Submit Answer
+            </button>
           </div>
-        );
-      })}
+        </div>
+      )}
+    </div>
+  );
+})}
+
     </div>
   );
 }
