@@ -1,8 +1,9 @@
+// AssignmentAnswers.js
 import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase-config";
 
-function AssignmentAnswers({ onClose }) {
+function AssignmentAnswers({ onClose, classroomName }) {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,10 +12,10 @@ function AssignmentAnswers({ onClose }) {
       try {
         const answersRef = collection(db, "assignmentAnswers");
         const querySnapshot = await getDocs(answersRef);
-        const fetchedAnswers = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const fetchedAnswers = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter((answer) => answer.classroom === classroomName); // Filter by classroom
+
         setAnswers(fetchedAnswers);
       } catch (error) {
         console.error("Error fetching assignment answers:", error);
@@ -24,7 +25,7 @@ function AssignmentAnswers({ onClose }) {
     };
 
     fetchAssignmentAnswers();
-  }, []);
+  }, [classroomName]);
 
   return (
     <div
@@ -33,7 +34,7 @@ function AssignmentAnswers({ onClose }) {
     >
       <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-6xl h-[80vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-6 text-center">
-          Submitted Assignment Answers
+          Submitted Assignment Answers for {classroomName}
         </h2>
 
         {loading ? (
@@ -103,7 +104,6 @@ function AssignmentAnswers({ onClose }) {
           </div>
         )}
 
-        {/* Close Button */}
         <div className="mt-8 flex justify-end">
           <button
             className="bg-gray-600 text-white px-6 py-3 rounded"

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import UploadAssignment from "./UploadAssignment";
 import UploadLesson from "./UploadLesson";
 import ViewSubmittedAssignment from "./ViewSubmittedAssignment"; // ✅ NEW
+import AssignmentAnswers from "./ViewSubmittedAssignment"; // ✅ ADDED
 
 import {
   collection,
@@ -216,7 +217,7 @@ function Beginner() {
       setFormOpen(false);
       setEditingStudent(null);
       setShowStudentDetails(false);
-      setViewingSubmissionFor(null); // ✅
+      setViewingSubmissionFor(null); // ✅ CLOSE MODAL
     }
   };
 
@@ -300,63 +301,27 @@ function Beginner() {
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold mb-4">Classroom Actions</h2>
-              <div className="flex flex-col gap-4">
-                <button
-                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded shadow"
-                  onClick={() => setUploadingAssignmentFor(selectedClassroom)}
-                >
-                  <FaUpload /> Upload Assignment
-                </button>
-                <button
-                  className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded shadow"
-                  onClick={() => {
-                    // ✅ MOCK SUBMISSION OBJECT
-                    const mockSubmission = {
-                      answerText: "This is my assignment answer.",
-                      assignmentId: "ASSIGN123",
-                      classroom: selectedClassroom.name,
-                      files: ["file1.pdf", "file2.docx"],
-                      questionContent: "Explain the use of present simple tense.",
-                      questionTitle: "Present Simple Tense",
-                      studentName: "John Doe",
-                      submitted: true,
-                      submittedAt: Date.now(),
-                    };
-                    setViewingSubmissionFor(mockSubmission);
-                  }}
-                >
-                  <FaFileAlt /> View Submitted Assignments
-                </button>
-                <button
-                  className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded shadow"
-                  onClick={() => setUploadingLessonFor(selectedClassroom)}
-                >
-                  <FaBook /> Upload Lesson
-                </button>
-              </div>
               <button
-                className="mt-6 bg-gray-600 text-white px-4 py-2 rounded"
-                onClick={() => setShowStudentDetails(false)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md"
+                onClick={() => setViewingSubmissionFor(selectedClassroom.name)} // ✅ ON BUTTON CLICK
               >
-                Close
+                View Submitted Assignments
+              </button>
+              <button
+                className="bg-yellow-600 text-white px-4 py-2 rounded-md mt-4"
+                onClick={() => setUploadingAssignmentFor(selectedClassroom.name)} // ✅ UPLOAD ASSIGNMENT BUTTON
+              >
+                Upload Assignment
+              </button>
+              <button
+                className="bg-teal-600 text-white px-4 py-2 rounded-md mt-4"
+                onClick={() => setUploadingLessonFor(selectedClassroom.name)} // ✅ UPLOAD LESSON BUTTON
+              >
+                Upload Lesson
               </button>
             </div>
           </div>
         </div>
-      )}
-
-      {uploadingAssignmentFor && (
-        <UploadAssignment
-          classroomName={uploadingAssignmentFor.name}
-          onClose={() => setUploadingAssignmentFor(null)}
-        />
-      )}
-
-      {uploadingLessonFor && (
-        <UploadLesson
-          classroomName={uploadingLessonFor.name}
-          onClose={() => setUploadingLessonFor(null)}
-        />
       )}
 
       {viewingSubmissionFor && (
@@ -364,8 +329,30 @@ function Beginner() {
           className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
           onClick={handleModalClose}
         >
-          <div className="bg-white rounded-lg shadow-lg overflow-y-auto max-h-[90vh] w-[90%] p-6">
-            <ViewSubmittedAssignment submission={viewingSubmissionFor} />
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full">
+            <AssignmentAnswers classroomName={viewingSubmissionFor} /> {/* ✅ SHOW ASSIGNMENT ANSWERS */}
+          </div>
+        </div>
+      )}
+
+      {uploadingAssignmentFor && (
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
+          onClick={handleModalClose}
+        >
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full">
+            <UploadAssignment classroomName={uploadingAssignmentFor} /> {/* ✅ UPLOAD ASSIGNMENT */}
+          </div>
+        </div>
+      )}
+
+      {uploadingLessonFor && (
+        <div
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
+          onClick={handleModalClose}
+        >
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full">
+            <UploadLesson classroomName={uploadingLessonFor} /> {/* ✅ UPLOAD LESSON */}
           </div>
         </div>
       )}
