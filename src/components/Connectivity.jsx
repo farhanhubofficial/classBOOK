@@ -21,6 +21,7 @@ import Lessons from './Lessons'
 import EnglishClass from './EnglishClass';
 import Beginner from "./Beginner"
 import StudentAssignments from "./StudentAssignments"
+import ViewSubmittedAssignment from './ViewSubmittedAssignment';
 
 function Connectivity() {
   const location = useLocation();
