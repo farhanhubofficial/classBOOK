@@ -1,4 +1,3 @@
-// AssignmentAnswers.js
 import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase-config";
@@ -6,6 +5,7 @@ import { db } from "../firebase-config";
 function AssignmentAnswers({ onClose, classroomName }) {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedIds, setExpandedIds] = useState([]); // Track expanded cards
 
   useEffect(() => {
     const fetchAssignmentAnswers = async () => {
@@ -14,7 +14,7 @@ function AssignmentAnswers({ onClose, classroomName }) {
         const querySnapshot = await getDocs(answersRef);
         const fetchedAnswers = querySnapshot.docs
           .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .filter((answer) => answer.classroom === classroomName); // Filter by classroom
+          .filter((answer) => answer.classroom === classroomName);
 
         setAnswers(fetchedAnswers);
       } catch (error) {
@@ -26,6 +26,12 @@ function AssignmentAnswers({ onClose, classroomName }) {
 
     fetchAssignmentAnswers();
   }, [classroomName]);
+
+  const toggleExpand = (id) => {
+    setExpandedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
 
   return (
     <div
@@ -43,64 +49,80 @@ function AssignmentAnswers({ onClose, classroomName }) {
           <p className="text-center text-gray-500">No assignment answers available.</p>
         ) : (
           <div className="space-y-8">
-            {answers.map((answer) => (
-              <div
-                key={answer.id}
-                className="border rounded-lg p-6 bg-gray-50 shadow-sm"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Student Name</p>
-                    <p className="font-medium text-gray-800">{answer.studentName}</p>
+            {answers.map((answer) => {
+              const isExpanded = expandedIds.includes(answer.id);
+              return (
+                <div
+                  key={answer.id}
+                  className="border rounded-lg p-6 bg-gray-50 shadow-sm"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Student Name</p>
+                      <p className="font-medium text-gray-800">{answer.studentName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Classroom</p>
+                      <p className="font-medium text-gray-800">{answer.classroom}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Submitted At</p>
+                      <p className="font-medium text-gray-800">
+                        {new Date(answer.submittedAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Status</p>
+                      <span className="inline-block px-3 py-1 text-sm rounded-full bg-green-200 text-green-800">
+                        Submitted
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Classroom</p>
-                    <p className="font-medium text-gray-800">{answer.classroom}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Submitted At</p>
-                    <p className="font-medium text-gray-800">
-                      {new Date(answer.submittedAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Status</p>
-                    <span className="inline-block px-3 py-1 text-sm rounded-full bg-green-200 text-green-800">
-                      Submitted
-                    </span>
+
+                  {isExpanded && (
+                    <>
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-500">Question Title</p>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                          {answer.questionTitle || "Untitled"}
+                        </h3>
+                        <p className="text-sm text-gray-500">Question Content</p>
+                        <p className="bg-white border p-4 rounded-md whitespace-pre-wrap text-gray-700">
+                          {answer.questionContent}
+                        </p>
+                      </div>
+
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-500">Student Answer</p>
+                        <p className="bg-green-50 border border-green-300 p-4 rounded-md whitespace-pre-wrap text-gray-800">
+                          {answer.answerText}
+                        </p>
+                      </div>
+
+                      {answer.files && answer.files.length > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-500">Attached Files</p>
+                          <ul className="list-disc pl-5 text-gray-700">
+                            {answer.files.map((file, idx) => (
+                              <li key={idx}>{file}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <div className="mt-4 text-right">
+                    <button
+                      className="text-blue-600 hover:underline text-sm"
+                      onClick={() => toggleExpand(answer.id)}
+                    >
+                      {isExpanded ? "Show Less" : "Show More"}
+                    </button>
                   </div>
                 </div>
-
-                <div className="mb-4">
-                  <p className="text-sm text-gray-500">Question Title</p>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    {answer.questionTitle || "Untitled"}
-                  </h3>
-                  <p className="text-sm text-gray-500">Question Content</p>
-                  <p className="bg-white border p-4 rounded-md whitespace-pre-wrap text-gray-700">
-                    {answer.questionContent}
-                  </p>
-                </div>
-
-                <div className="mb-4">
-                  <p className="text-sm text-gray-500">Student Answer</p>
-                  <p className="bg-green-50 border border-green-300 p-4 rounded-md whitespace-pre-wrap text-gray-800">
-                    {answer.answerText}
-                  </p>
-                </div>
-
-                {answer.files && answer.files.length > 0 && (
-                  <div>
-                    <p className="text-sm text-gray-500">Attached Files</p>
-                    <ul className="list-disc pl-5 text-gray-700">
-                      {answer.files.map((file, idx) => (
-                        <li key={idx}>{file}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

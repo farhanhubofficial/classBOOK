@@ -5,7 +5,13 @@ import Header from './Header';
 import Home from './Home';
 import Login from './Login';
 import SignUp from './Signup';
+import Elementary from './Elementary'
+import Advanced from './Advanced'
+import Proficiency from './Proficiency'
 
+import Intermediate from './Intermediate'
+
+import UpperIntermediate from './UpperIntermediate'
 
 // Dashboards
 import StudentDashboard from './StudentDashboard';
@@ -45,6 +51,14 @@ function Connectivity() {
           <Route path="curriculum/cbc" element={<Cbc />} />
           <Route path="curriculum/english-course" element={<EnglishClass />} />
           <Route path ="curriculum/english-course/beginner"  element ={<Beginner />}  />
+       <Route path ="curriculum/english-course/elementary"  element ={<Elementary />}  />
+     <Route path ="curriculum/english-course/advanced"  element ={<Advanced />}  />
+     <Route path ="curriculum/english-course/proficiency"  element ={<Proficiency />}  />
+
+     <Route path ="curriculum/english-course/upper-intermediate"  element ={<UpperIntermediate />}  />
+
+    <Route path ="curriculum/english-course/intermediate"  element ={<Intermediate />}  />
+
         </Route>
 
         {/* Student Routes */}

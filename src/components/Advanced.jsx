@@ -20,8 +20,8 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-function Beginner() {
-  const level = "A1 (Beginner)";
+function Advanced() {
+  const level = "C1 (Advanced)";
   const [students, setStudents] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -585,4 +585,4 @@ function Beginner() {
   );
 }
 
-export default Beginner;
+export default Advanced;
