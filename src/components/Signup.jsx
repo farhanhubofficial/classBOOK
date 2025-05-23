@@ -37,6 +37,13 @@ function Signup() {
     "C2 (Proficiency)"
   ];
 
+  const SomaliLevels = [
+    "Bilow (Beginner)",
+    "Hoose (Elementary)",
+    "Dhexdhexaad (Intermediate)",
+    "Sare (Advanced)"
+  ];
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -61,7 +68,6 @@ function Signup() {
       });
 
       const userDocRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
 
       let role = formData.category;
 
@@ -71,7 +77,12 @@ function Signup() {
         lastName: formData.lastName,
         role,
         category: formData.category,
-        curriculum: formData.curriculum === "english" ? "English Course" : formData.curriculum || null,
+        curriculum:
+          formData.curriculum === "english"
+            ? "English Course"
+            : formData.curriculum === "somali"
+            ? "Somali Course"
+            : formData.curriculum || null,
         grade: formData.grade || null,
         daysPresent: 0,
         daysAbsent: 0,
@@ -200,6 +211,21 @@ function Signup() {
                     >
                       <option value="">Select Level</option>
                       {EnglishLevels.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
+                  ) : formData.curriculum === "somali" ? (
+                    <select
+                      name="grade"
+                      value={formData.grade}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border rounded-lg bg-white"
+                    >
+                      <option value="">Select Level</option>
+                      {SomaliLevels.map((level) => (
                         <option key={level} value={level}>
                           {level}
                         </option>

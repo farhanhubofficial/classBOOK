@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
 
 function AssignmentAnswers({ onClose, classroomName }) {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [expandedIds, setExpandedIds] = useState([]); // Track expanded cards
+  const [expandedIds, setExpandedIds] = useState([]);
+  const [evaluationStatus, setEvaluationStatus] = useState({});
+  const [isCorrectAnswerModalOpen, setCorrectAnswerModalOpen] = useState(false);
+  const [currentAnswerId, setCurrentAnswerId] = useState(null);
+  const [correctAnswerText, setCorrectAnswerText] = useState("");
 
   useEffect(() => {
     const fetchAssignmentAnswers = async () => {
@@ -33,6 +37,38 @@ function AssignmentAnswers({ onClose, classroomName }) {
     );
   };
 
+  const handleMarkCorrect = (id) => {
+    setEvaluationStatus((prev) => ({ ...prev, [id]: "correct" }));
+    updateAnswerEvaluation(id, "correct");
+  };
+
+  const handleMarkIncorrect = (id) => {
+    setEvaluationStatus((prev) => ({ ...prev, [id]: "incorrect" }));
+    updateAnswerEvaluation(id, "incorrect");
+  };
+
+  const updateAnswerEvaluation = async (id, status) => {
+    try {
+      const answerRef = doc(db, "assignmentAnswers", id);
+      await updateDoc(answerRef, { evaluationStatus: status });
+    } catch (error) {
+      console.error("Error updating answer evaluation:", error);
+    }
+  };
+
+  const handleCorrectAnswerSubmit = async (answerText) => {
+    try {
+      const answerRef = doc(db, "assignmentAnswers", currentAnswerId);
+      await updateDoc(answerRef, { correctAnswer: answerText });
+      setEvaluationStatus((prev) => ({
+        ...prev,
+        [currentAnswerId]: "correct",
+      }));
+    } catch (error) {
+      console.error("Error submitting correct answer:", error);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center modal-overlay z-50"
@@ -51,6 +87,8 @@ function AssignmentAnswers({ onClose, classroomName }) {
           <div className="space-y-8">
             {answers.map((answer) => {
               const isExpanded = expandedIds.includes(answer.id);
+              const status = evaluationStatus[answer.id] || answer.evaluationStatus;
+
               return (
                 <div
                   key={answer.id}
@@ -94,10 +132,49 @@ function AssignmentAnswers({ onClose, classroomName }) {
 
                       <div className="mb-4">
                         <p className="text-sm text-gray-500">Student Answer</p>
-                        <p className="bg-green-50 border border-green-300 p-4 rounded-md whitespace-pre-wrap text-gray-800">
-                          {answer.answerText}
-                        </p>
+                        <div className="flex">
+                          <p className="bg-green-50 border border-green-300 p-4 rounded-md whitespace-pre-wrap text-gray-800 flex-1">
+                            {answer.answerText}
+                          </p>
+                          <div className="flex flex-col items-start space-y-2 ml-4">
+                            <button
+                              className={`px-2 py-1 rounded ${
+                                status === "correct" ? "bg-green-500 text-white" : "bg-gray-200"
+                              }`}
+                              onClick={() => handleMarkCorrect(answer.id)}
+                            >
+                              ✅ Mark Right
+                            </button>
+                            <button
+                              className={`px-2 py-1 rounded ${
+                                status === "incorrect" ? "bg-red-500 text-white" : "bg-gray-200"
+                              }`}
+                              onClick={() => handleMarkIncorrect(answer.id)}
+                            >
+                              ❌ Mark Wrong
+                            </button>
+                            <button
+                              className="px-2 py-1 bg-blue-500 text-white rounded"
+                              onClick={() => {
+                                setCurrentAnswerId(answer.id);
+                                setCorrectAnswerText(answer.correctAnswer || "");
+                                setCorrectAnswerModalOpen(true);
+                              }}
+                            >
+                              ✏️ Write Correct
+                            </button>
+                          </div>
+                        </div>
                       </div>
+
+                      {answer.correctAnswer && (
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-500">Correct Answer</p>
+                          <p className="bg-blue-50 border border-blue-300 p-4 rounded-md whitespace-pre-wrap text-gray-800">
+                            {answer.correctAnswer}
+                          </p>
+                        </div>
+                      )}
 
                       {answer.files && answer.files.length > 0 && (
                         <div>
@@ -134,6 +211,44 @@ function AssignmentAnswers({ onClose, classroomName }) {
             Close
           </button>
         </div>
+
+        {isCorrectAnswerModalOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center modal-overlay z-50"
+            onClick={(e) =>
+              e.target.classList.contains("modal-overlay") &&
+              setCorrectAnswerModalOpen(false)
+            }
+          >
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+              <h3 className="text-xl font-semibold mb-4">Provide Correct Answer</h3>
+              <textarea
+                value={correctAnswerText}
+                onChange={(e) => setCorrectAnswerText(e.target.value)}
+                className="w-full p-2 border rounded-md mb-4"
+                rows="4"
+              />
+              <div className="flex justify-end space-x-4">
+                <button
+                  className="bg-gray-500 text-white px-4 py-2 rounded"
+                  onClick={() => setCorrectAnswerModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
+                  onClick={() => {
+                    handleCorrectAnswerSubmit(correctAnswerText);
+                    setCorrectAnswerModalOpen(false);
+                    setCorrectAnswerText("");
+                  }}
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
