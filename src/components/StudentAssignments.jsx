@@ -188,26 +188,46 @@ function StudentAssignments() {
               Posted on: {new Date(assignment.date).toLocaleString()}
             </p>
 
-            {!isSubmitted ? (
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded"
-                onClick={() => toggleAnswerForm(assignment.id)}
-              >
-                {answerState.open ? "Cancel" : "Answer"}
-              </button>
-            ) : (
-              <div className="flex justify-between items-center mt-4">
-                <span className="text-green-600 font-semibold">Submitted</span>
-                {answerData?.evaluationStatus !== "correct" && (
-                  <button
-                    onClick={() => toggleViewAnswer(assignment.id)}
-                    className="px-3 py-1 border rounded text-blue-600 hover:bg-blue-100"
-                  >
-                    {isViewAnswerOpen ? "Hide Answer" : "View Answer"}
-                  </button>
-                )}
-              </div>
-            )}
+           {/* Buttons for Submit or Submitted */}
+{!isSubmitted ? (
+  <button
+    className="bg-blue-600 text-white px-4 py-2 rounded"
+    onClick={() => toggleAnswerForm(assignment.id)}
+  >
+    {answerState.open ? "Cancel" : "Answer"}
+  </button>
+) : (
+  <div className="flex items-center gap-3 mt-4">
+    {/* Show icons only if evaluated */}
+    {answerData?.evaluationStatus === "correct" && (
+      <span className="text-green-600 text-xl" title="Correct">✅</span>
+    )}
+    {answerData?.evaluationStatus === "incorrect" && (
+      <span className="text-red-600 text-xl" title="Incorrect">❌</span>
+    )}
+
+    {/* View Answer button only shows teacher's correct answer */}
+    {answerData?.correctAnswer && (
+      <button
+        onClick={() => toggleViewAnswer(assignment.id)}
+        className="px-3 py-1 border rounded text-blue-600 hover:bg-blue-100"
+      >
+        {isViewAnswerOpen ? "Hide Answer" : "View Answer"}
+      </button>
+    )}
+  </div>
+)}
+
+{/* Show only teacher's corrected answer if view is open */}
+{isViewAnswerOpen && answerData?.correctAnswer && (
+  <div className="mt-6 bg-gray-50 border border-gray-300 rounded p-4">
+    <strong>Teacher's Correct Answer:</strong>
+    <p className="bg-white border p-3 rounded mt-1 text-gray-800 whitespace-pre-wrap">
+      {answerData.correctAnswer}
+    </p>
+  </div>
+)}
+
 
             {answerState.open && !isSubmitted && (
               <div className="mt-4 border-t pt-4">
