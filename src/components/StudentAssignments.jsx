@@ -19,10 +19,7 @@ function StudentAssignments() {
   const [expandedContent, setExpandedContent] = useState({});
   const [answerForms, setAnswerForms] = useState({});
   const [submittedAssignments, setSubmittedAssignments] = useState([]);
-  
-  // NEW: Store the detailed submitted answers for each assignment
   const [submittedAnswersDetails, setSubmittedAnswersDetails] = useState({});
-  // NEW: Track which submitted answer's details are expanded (viewed)
   const [viewAnswerExpanded, setViewAnswerExpanded] = useState({});
 
   useEffect(() => {
@@ -44,7 +41,6 @@ function StudentAssignments() {
         setStudentName(fullName);
         setStudentClassroom(classroomName);
 
-        // Fetch assignments
         const assignmentsRef = collection(db, "assignments");
         const q = query(assignmentsRef, where("classroom", "==", classroomName));
         const snapshot = await getDocs(q);
@@ -55,10 +51,8 @@ function StudentAssignments() {
         filteredAssignments.sort((a, b) => new Date(b.date) - new Date(a.date));
         setAssignments(filteredAssignments);
 
-        // Fetch submitted answers for this student
-        const assignmentAnswersRef = collection(db, "assignmentAnswers");
         const answersQuery = query(
-          assignmentAnswersRef,
+          collection(db, "assignmentAnswers"),
           where("studentName", "==", fullName),
           where("submitted", "==", true)
         );
@@ -69,7 +63,6 @@ function StudentAssignments() {
         answersSnapshot.docs.forEach((doc) => {
           const data = doc.data();
           submittedIds.push(data.assignmentId);
-          // Save full answer data keyed by assignmentId
           answersDetails[data.assignmentId] = { id: doc.id, ...data };
         });
 
@@ -99,24 +92,18 @@ function StudentAssignments() {
     }));
   };
 
-  // NEW: Toggle the "View Answer" expanded panel for submitted assignments
-  const toggleViewAnswer = (assignmentId) => {
+  const toggleViewAnswer = (id) => {
     setViewAnswerExpanded((prev) => ({
       ...prev,
-      [assignmentId]: !prev[assignmentId],
+      [id]: !prev[id],
     }));
   };
 
   const handleAnswerSubmit = async (assignment) => {
     const answerText = answerForms[assignment.id]?.text?.trim();
-    if (!answerText) {
-      alert("Answer cannot be empty.");
-      return;
-    }
-
+    if (!answerText) return alert("Answer cannot be empty.");
     if (submittedAssignments.includes(assignment.id)) {
-      alert("You have already submitted an answer for this assignment.");
-      return;
+      return alert("You have already submitted an answer for this assignment.");
     }
 
     const answerData = {
@@ -124,8 +111,7 @@ function StudentAssignments() {
       assignmentId: assignment.id,
       classroom: assignment.classroom,
       files: [],
-      questionTitle:
-        assignment.writtenTitle || assignment.fileTitle || "Untitled",
+      questionTitle: assignment.writtenTitle || assignment.fileTitle || "Untitled",
       questionContent: assignment.content || "",
       studentName,
       submittedAt: new Date().toISOString(),
@@ -134,13 +120,11 @@ function StudentAssignments() {
 
     try {
       await addDoc(collection(db, "assignmentAnswers"), answerData);
-
       setSubmittedAssignments((prev) => [...prev, assignment.id]);
       setAnswerForms((prev) => ({
         ...prev,
         [assignment.id]: { open: false, text: "" },
       }));
-
       alert("Answer submitted successfully.");
     } catch (error) {
       console.error("Error submitting answer:", error.message);
@@ -149,10 +133,8 @@ function StudentAssignments() {
   };
 
   if (loading) return <p>Loading assignments...</p>;
-  if (!studentClassroom)
-    return <p>No classroom assigned or user not authenticated.</p>;
-  if (assignments.length === 0)
-    return <p>No assignments available for your classroom.</p>;
+  if (!studentClassroom) return <p>No classroom assigned or user not authenticated.</p>;
+  if (assignments.length === 0) return <p>No assignments available for your classroom.</p>;
 
   return (
     <div className="p-6">
@@ -163,29 +145,25 @@ function StudentAssignments() {
         const isSubmitted = submittedAssignments.includes(assignment.id);
         const answerState = answerForms[assignment.id] || { open: false, text: "" };
         const isViewAnswerOpen = viewAnswerExpanded[assignment.id];
+        const answerData = submittedAnswersDetails[assignment.id];
 
         const contentToShow =
-          isExpanded || assignment.content.length < 200
+          isExpanded || (assignment.content?.length ?? 0) < 200
             ? assignment.content
             : assignment.content.substring(0, 200) + "...";
-
-        // Get submitted answer details for this assignment if available
-        const answerData = submittedAnswersDetails[assignment.id];
 
         return (
           <div
             key={assignment.id}
-            className="border rounded-md p-5 mb-6 shadow-sm bg-white relative"
+            className="border rounded-md p-5 mb-6 shadow-sm bg-white"
           >
             <h3 className="text-xl font-bold text-blue-700 mb-2">
-              {assignment.writtenTitle ||
-                assignment.fileTitle ||
-                "Untitled Assignment"}
+              {assignment.writtenTitle || assignment.fileTitle || "Untitled Assignment"}
             </h3>
 
             <p className="mb-3 text-gray-700 whitespace-pre-wrap">
               <strong>Content:</strong> {contentToShow}
-              {assignment.content.length > 200 && (
+              {assignment.content?.length > 200 && (
                 <button
                   className="text-blue-500 ml-2"
                   onClick={() => toggleContent(assignment.id)}
@@ -195,12 +173,12 @@ function StudentAssignments() {
               )}
             </p>
 
-            {assignment.files && assignment.files.length > 0 && (
+            {assignment.files?.length > 0 && (
               <div className="mb-2">
                 <strong>Attached Files:</strong>
                 <ul className="list-disc list-inside text-gray-600">
-                  {assignment.files.map((fileName, idx) => (
-                    <li key={idx}>{fileName}</li>
+                  {assignment.files.map((file, i) => (
+                    <li key={i}>{file}</li>
                   ))}
                 </ul>
               </div>
@@ -218,17 +196,17 @@ function StudentAssignments() {
                 {answerState.open ? "Cancel" : "Answer"}
               </button>
             ) : (
-              <>
+              <div className="flex justify-between items-center mt-4">
                 <span className="text-green-600 font-semibold">Submitted</span>
-
-                {/* NEW: View Answer button in top right corner */}
-                <button
-                  onClick={() => toggleViewAnswer(assignment.id)}
-                  className="absolute top-5 right-5 px-3 py-1 border rounded text-blue-600 hover:bg-blue-100"
-                >
-                  {isViewAnswerOpen ? "Hide Answer" : "View Answer"}
-                </button>
-              </>
+                {answerData?.evaluationStatus !== "correct" && (
+                  <button
+                    onClick={() => toggleViewAnswer(assignment.id)}
+                    className="px-3 py-1 border rounded text-blue-600 hover:bg-blue-100"
+                  >
+                    {isViewAnswerOpen ? "Hide Answer" : "View Answer"}
+                  </button>
+                )}
+              </div>
             )}
 
             {answerState.open && !isSubmitted && (
@@ -236,7 +214,7 @@ function StudentAssignments() {
                 <textarea
                   className="w-full border border-gray-300 rounded p-3 mb-3 min-h-[120px]"
                   placeholder="Write your answer here..."
-                  value={answerState.text || ""}
+                  value={answerState.text}
                   onChange={(e) =>
                     setAnswerForms((prev) => ({
                       ...prev,
@@ -270,23 +248,22 @@ function StudentAssignments() {
               </div>
             )}
 
-            {/* NEW: Show the submitted answer, evaluation and correct answer when "View Answer" is clicked */}
-            {isViewAnswerOpen && answerData && (
+            {isViewAnswerOpen && answerData?.evaluationStatus !== "correct" && (
               <div className="mt-6 bg-gray-50 border border-gray-300 rounded p-4">
-                <p>
-                  <strong>Your Answer:</strong>
-                </p>
-                <p className="bg-white border p-3 rounded mt-1 text-gray-800 whitespace-pre-wrap">
+                <p className="font-semibold mb-1">Your Answer:</p>
+                <p className="bg-white border p-3 rounded text-gray-800 whitespace-pre-wrap">
                   {answerData.answerText || "No answer text found."}
                 </p>
 
-                <p className={`mt-3 font-semibold ${
-                  answerData.evaluationStatus === "correct"
-                    ? "text-green-700"
-                    : answerData.evaluationStatus === "incorrect"
-                    ? "text-red-700"
-                    : "text-gray-700"
-                }`}>
+                <p
+                  className={`mt-3 font-semibold ${
+                    answerData.evaluationStatus === "correct"
+                      ? "text-green-700"
+                      : answerData.evaluationStatus === "incorrect"
+                      ? "text-red-700"
+                      : "text-gray-700"
+                  }`}
+                >
                   Evaluation:{" "}
                   {answerData.evaluationStatus === "correct"
                     ? "✅ Correct"
@@ -298,9 +275,7 @@ function StudentAssignments() {
                 <div className="mt-3">
                   <strong>Teacher's Correct Answer:</strong>
                   <p className="bg-white border p-3 rounded mt-1 text-gray-800 whitespace-pre-wrap">
-                    {answerData.correctAnswer
-                      ? answerData.correctAnswer
-                      : "No answer posted yet."}
+                    {answerData.correctAnswer || "No answer posted yet."}
                   </p>
                 </div>
               </div>
