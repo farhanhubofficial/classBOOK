@@ -41,6 +41,7 @@ function StudentAssignments() {
         setStudentName(fullName);
         setStudentClassroom(classroomName);
 
+        // Fetch assignments for this classroom
         const assignmentsRef = collection(db, "assignments");
         const q = query(assignmentsRef, where("classroom", "==", classroomName));
         const snapshot = await getDocs(q);
@@ -51,6 +52,7 @@ function StudentAssignments() {
         filteredAssignments.sort((a, b) => new Date(b.date) - new Date(a.date));
         setAssignments(filteredAssignments);
 
+        // Fetch submitted answers by this student
         const answersQuery = query(
           collection(db, "assignmentAnswers"),
           where("studentName", "==", fullName),
@@ -152,6 +154,14 @@ function StudentAssignments() {
             ? assignment.content
             : assignment.content.substring(0, 200) + "...";
 
+        // Determine if we should show the "View Answer" button:
+        // Show only if submitted, evaluationStatus != 'correct', and correctAnswer exists & not empty
+        const canViewAnswer =
+          isSubmitted &&
+          answerData &&
+          answerData.evaluationStatus !== "correct" &&
+          answerData.correctAnswer?.trim().length > 0;
+
         return (
           <div
             key={assignment.id}
@@ -188,46 +198,49 @@ function StudentAssignments() {
               Posted on: {new Date(assignment.date).toLocaleString()}
             </p>
 
-           {/* Buttons for Submit or Submitted */}
-{!isSubmitted ? (
-  <button
-    className="bg-blue-600 text-white px-4 py-2 rounded"
-    onClick={() => toggleAnswerForm(assignment.id)}
-  >
-    {answerState.open ? "Cancel" : "Answer"}
-  </button>
-) : (
-  <div className="flex items-center gap-3 mt-4">
-    {/* Show icons only if evaluated */}
-    {answerData?.evaluationStatus === "correct" && (
-      <span className="text-green-600 text-xl" title="Correct">✅</span>
-    )}
-    {answerData?.evaluationStatus === "incorrect" && (
-      <span className="text-red-600 text-xl" title="Incorrect">❌</span>
-    )}
+            {!isSubmitted ? (
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+                onClick={() => toggleAnswerForm(assignment.id)}
+              >
+                {answerState.open ? "Cancel" : "Answer"}
+              </button>
+            ) : (
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-green-600 font-semibold flex items-center gap-1">
+                  Submitted
+                  {/* Show correct/incorrect icon next to "Submitted" */}
+                  {answerData?.evaluationStatus === "correct" && (
+                    <span
+                      title="Correct"
+                      className="text-green-700 text-xl select-none"
+                      aria-label="Correct"
+                    >
+                      ✅
+                    </span>
+                  )}
+                  {answerData?.evaluationStatus === "incorrect" && (
+                    <span
+                      title="Incorrect"
+                      className="text-red-700 text-xl select-none"
+                      aria-label="Incorrect"
+                    >
+                      ❌
+                    </span>
+                  )}
+                </span>
 
-    {/* View Answer button only shows teacher's correct answer */}
-    {answerData?.correctAnswer && (
-      <button
-        onClick={() => toggleViewAnswer(assignment.id)}
-        className="px-3 py-1 border rounded text-blue-600 hover:bg-blue-100"
-      >
-        {isViewAnswerOpen ? "Hide Answer" : "View Answer"}
-      </button>
-    )}
-  </div>
-)}
-
-{/* Show only teacher's corrected answer if view is open */}
-{isViewAnswerOpen && answerData?.correctAnswer && (
-  <div className="mt-6 bg-gray-50 border border-gray-300 rounded p-4">
-    <strong>Teacher's Correct Answer:</strong>
-    <p className="bg-white border p-3 rounded mt-1 text-gray-800 whitespace-pre-wrap">
-      {answerData.correctAnswer}
-    </p>
-  </div>
-)}
-
+                {/* Show View Answer only if not correct and correctAnswer exists */}
+                {canViewAnswer && (
+                  <button
+                    onClick={() => toggleViewAnswer(assignment.id)}
+                    className="px-3 py-1 border rounded text-blue-600 hover:bg-blue-100"
+                  >
+                    {isViewAnswerOpen ? "Hide Answer" : "View Answer"}
+                  </button>
+                )}
+              </div>
+            )}
 
             {answerState.open && !isSubmitted && (
               <div className="mt-4 border-t pt-4">
@@ -268,28 +281,16 @@ function StudentAssignments() {
               </div>
             )}
 
-            {isViewAnswerOpen && answerData?.evaluationStatus !== "correct" && (
+            {/* Show detailed answer only when toggled and only if evaluation is NOT correct */}
+            {isViewAnswerOpen && canViewAnswer && (
               <div className="mt-6 bg-gray-50 border border-gray-300 rounded p-4">
                 <p className="font-semibold mb-1">Your Answer:</p>
                 <p className="bg-white border p-3 rounded text-gray-800 whitespace-pre-wrap">
                   {answerData.answerText || "No answer text found."}
                 </p>
 
-                <p
-                  className={`mt-3 font-semibold ${
-                    answerData.evaluationStatus === "correct"
-                      ? "text-green-700"
-                      : answerData.evaluationStatus === "incorrect"
-                      ? "text-red-700"
-                      : "text-gray-700"
-                  }`}
-                >
-                  Evaluation:{" "}
-                  {answerData.evaluationStatus === "correct"
-                    ? "✅ Correct"
-                    : answerData.evaluationStatus === "incorrect"
-                    ? "❌ Incorrect"
-                    : "Not yet evaluated"}
+                <p className="mt-3 font-semibold text-red-700">
+                  Evaluation: ❌ Incorrect
                 </p>
 
                 <div className="mt-3">
