@@ -8,6 +8,11 @@ import SignUp from './Signup';
 import Elementary from './Elementary'
 import Advanced from './Advanced'
 import Proficiency from './Proficiency'
+import SomaliBeginner from './Somali-beginner'
+import SomaliIntermediate from './SomaliIntermediate'
+import SomaliElementary from './SomaliElementary'
+
+import SomaliAdvanced from './SomaliAdvanced'
 
 import Intermediate from './Intermediate'
 
@@ -19,6 +24,10 @@ import LearnersDashboard from './LearnerDashboard';
 import Cbc from './Cbc';
 import AdminDashboard from './AdminDashboard';
 import DashboardHome from './DashboardHome';
+import Somali from './Somali'
+import Arabic from './Arabic'
+import Kiswahili from './Kiswahili'
+
 
 // New pages for nested student routes
 import StudentSubjects from './StudentSubjects';
@@ -50,6 +59,11 @@ function Connectivity() {
           <Route path="dashboard" element={<DashboardHome />} />
           <Route path="curriculum/cbc" element={<Cbc />} />
           <Route path="curriculum/english-course" element={<EnglishClass />} />
+           <Route path="curriculum/somali-course" element={<Somali />} />
+           <Route path="curriculum/arabic-course" element={<Arabic />} />
+                      <Route path="curriculum/kiswahili-course" element={<Kiswahili />} />
+
+
           <Route path ="curriculum/english-course/beginner"  element ={<Beginner />}  />
        <Route path ="curriculum/english-course/elementary"  element ={<Elementary />}  />
      <Route path ="curriculum/english-course/advanced"  element ={<Advanced />}  />
@@ -59,7 +73,23 @@ function Connectivity() {
 
     <Route path ="curriculum/english-course/intermediate"  element ={<Intermediate />}  />
 
+      <Route path ="curriculum/somali-course/beginner"  element ={<SomaliBeginner />}  />
+        <Route path ="curriculum/somali-course/intermediate"  element ={<SomaliIntermediate />}  />
+        <Route path ="curriculum/somali-course/elementary"  element ={<SomaliElementary/>}  />
+        <Route path ="curriculum/somali-course/advanced"  element ={<SomaliAdvanced/>}  />
+
         </Route>
+
+
+
+
+    
+
+
+
+
+
+
 
         {/* Student Routes */}
         <Route path="/students" element={<StudentDashboard />}>

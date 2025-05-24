@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase-config";
 
@@ -44,12 +44,26 @@ function Signup() {
     "Sare (Advanced)"
   ];
 
+  const KiswahiliLevels = [
+    "Kiwango cha Msingi (Beginner)",
+    "Kiwango cha Kati (Intermediate)",
+    "Kiwango cha Juu (Advanced)"
+  ];
+
+  const ArabicLevels = [
+    "مبتدئ (Beginner)",
+    "أساسي (Elementary)",
+    "متوسط (Intermediate)",
+    "متقدم (Advanced)",
+    "إجادة (Proficiency)"
+  ];
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setError(""); // Clear error on input change
+    setError("");
   };
 
   const handleSignup = async (e) => {
@@ -82,6 +96,10 @@ function Signup() {
             ? "English Course"
             : formData.curriculum === "somali"
             ? "Somali Course"
+            : formData.curriculum === "arabic"
+            ? "Arabic Course"
+            : formData.curriculum === "kiswahili"
+            ? "Kiswahili Course"
             : formData.curriculum || null,
         grade: formData.grade || null,
         daysPresent: 0,
@@ -226,6 +244,36 @@ function Signup() {
                     >
                       <option value="">Select Level</option>
                       {SomaliLevels.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
+                  ) : formData.curriculum === "kiswahili" ? (
+                    <select
+                      name="grade"
+                      value={formData.grade}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border rounded-lg bg-white"
+                    >
+                      <option value="">Select Level</option>
+                      {KiswahiliLevels.map((level) => (
+                        <option key={level} value={level}>
+                          {level}
+                        </option>
+                      ))}
+                    </select>
+                  ) : formData.curriculum === "arabic" ? (
+                    <select
+                      name="grade"
+                      value={formData.grade}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border rounded-lg bg-white"
+                    >
+                      <option value="">Select Level</option>
+                      {ArabicLevels.map((level) => (
                         <option key={level} value={level}>
                           {level}
                         </option>
