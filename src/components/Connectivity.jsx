@@ -27,6 +27,9 @@ import DashboardHome from './DashboardHome';
 import Somali from './Somali'
 import Arabic from './Arabic'
 import Kiswahili from './Kiswahili'
+import Students from './Students'
+import PaymentStatus from './PaymentStatus'
+
 
 
 // New pages for nested student routes
@@ -62,6 +65,8 @@ function Connectivity() {
            <Route path="curriculum/somali-course" element={<Somali />} />
            <Route path="curriculum/arabic-course" element={<Arabic />} />
                       <Route path="curriculum/kiswahili-course" element={<Kiswahili />} />
+          <Route path="students" element={<Students />} />
+          <Route path="payments" element={<PaymentStatus />} />
 
 
           <Route path ="curriculum/english-course/beginner"  element ={<Beginner />}  />

@@ -100,7 +100,11 @@ const StudentDashboard = () => {
             <FiSettings /> Settings
           </button>
 
-          {userData?.curriculum === "English Course" ? (
+          {userData?.curriculum === "English Course" ||
+userData?.curriculum === "Kiswahili Course" ||
+userData?.curriculum === "Somali Course" ||
+userData?.curriculum === "Arabic Course"
+ ? (
             <>
               <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lessons")}>
                 <GiSpellBook /> Lessons

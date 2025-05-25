@@ -135,9 +135,6 @@ const AdminDashboard = () => {
             )}
           </div>
 
-          <button onClick={() => navigate("/admin/content")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
-            <FaBook /> Content Management
-          </button>
 
           <button onClick={() => navigate("/admin/students")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaUserGraduate /> Students
