@@ -47,8 +47,9 @@ function Connectivity() {
   const isStudentRoute = location.pathname.startsWith('/students');
   const showHeader = !isAdminRoute && !isStudentRoute && location.pathname !== '/learners-dashboard';
 
-  useEffect(() => {
-    if (!loading && user && userData) {
+useEffect(() => {
+  if (!loading && user && userData) {
+    if (location.pathname === '/' || location.pathname === '/login') {
       if (userData.role === 'learner') {
         navigate('/students/dashboard');
       } else if (userData.role === 'admin') {
@@ -57,7 +58,9 @@ function Connectivity() {
         navigate('/users');
       }
     }
-  }, [loading, user, userData, navigate]);
+  }
+}, [loading, user, userData, navigate, location.pathname]);
+
 
   // ✅ Use new spinner loading screen
   if (loading) return <LoadingScreen />;
