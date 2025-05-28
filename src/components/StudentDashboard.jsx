@@ -9,6 +9,7 @@ import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
 import { useNavigate, Outlet } from "react-router-dom";
+import LoadingScreen from "./LoadingScreen"
 
 const StudentDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -63,7 +64,7 @@ const StudentDashboard = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <p>Loading...</p>
+        <p><LoadingScreen /></p>
       </div>
     );
   }
