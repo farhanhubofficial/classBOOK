@@ -78,9 +78,9 @@ const AdminDashboard = () => {
         ref={sidebarRef}
         className={`fixed top-0 left-0 z-40 w-64 h-screen bg-gray-100 p-5 shadow-lg transform transition-transform duration-300 overflow-y-auto max-h-screen ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } xl:translate-x-0`}
+        } lg:translate-x-0`}
       >
-        <div className="xl:hidden flex justify-end mb-4">
+        <div className="lg:hidden flex justify-end mb-4">
           <MdClose className="text-3xl text-green-600 cursor-pointer" onClick={toggleSidebar} />
         </div>
 
@@ -93,7 +93,7 @@ const AdminDashboard = () => {
           <h2 className="text-lg font-semibold mt-2">
             {userData ? `${userData.firstName} ${userData.lastName}` : "Loading..."}
           </h2>
-          <h2 className="font-semibold mt-2">
+          <h2 className=" font-semibold mt-2">
             {userData ? `${userData.role}` : "Loading..."}
           </h2>
           <p className="text-sm text-gray-600">{userData ? userData.category : "Loading..."}</p>
@@ -135,6 +135,7 @@ const AdminDashboard = () => {
             )}
           </div>
 
+
           <button onClick={() => navigate("/admin/students")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaUserGraduate /> Students
           </button>
@@ -166,11 +167,11 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1  xl:ml-64 bg-gray-50 min-h-screen">
+      <main className="flex-1 p-4 lg:ml-64 bg-gray-50 min-h-screen">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-white p-3 rounded shadow-sm flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <IoMdMenu className="text-2xl text-green-600 cursor-pointer xl:hidden" onClick={toggleSidebar} />
+            <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
             <h1 className="text-xl font-semibold text-gray-700">Admin Dashboard</h1>
           </div>
           <div className="flex items-center gap-3">
