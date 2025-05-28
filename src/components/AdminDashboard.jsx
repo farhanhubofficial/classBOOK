@@ -166,7 +166,7 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 xl:ml-64 bg-gray-50 min-h-screen">
+      <main className="flex-1  xl:ml-64 bg-gray-50 min-h-screen">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-white p-3 rounded shadow-sm flex justify-between items-center">
           <div className="flex items-center gap-3">
