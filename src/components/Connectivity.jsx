@@ -34,6 +34,7 @@ import EnglishClass from './EnglishClass';
 import Beginner from './Beginner';
 import StudentAssignments from './StudentAssignments';
 import ViewSubmittedAssignment from './ViewSubmittedAssignment';
+import UploadAssignment from './UploadAssignment';
 
 import { useAuth } from './AuthContext';
 import LoadingScreen from './LoadingScreen'; // ✅ custom loading component
@@ -93,6 +94,11 @@ useEffect(() => {
           <Route path="curriculum/kiswahili-course" element={<Kiswahili />} />
           <Route path="students" element={<Students />} />
           <Route path="payments" element={<PaymentStatus />} />
+  <Route path="view-assignments/:classroomName" element={<ViewSubmittedAssignment />} />
+    <Route path="upload-assignments/:classroomName" element={<UploadAssignment />} />
+
+
+
         </Route>
 
         {/* Student Routes */}
