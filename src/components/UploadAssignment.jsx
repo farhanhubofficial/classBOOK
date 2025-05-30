@@ -1,19 +1,25 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom"; // ✅ Added
+import { useParams, useNavigate } from "react-router-dom";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase-config";
 
-function UploadAssignment({ onClose = () => {} }) {
-  const { classroomName } = useParams(); // ✅ Extract classroom name from URL
-
+function UploadAssignment() {
+  const { classroomName } = useParams();
+  const navigate = useNavigate();
 
   const [writtenTitle, setWrittenTitle] = useState("");
   const [fileTitle, setFileTitle] = useState("");
   const [assignmentContent, setAssignmentContent] = useState("");
   const [files, setFiles] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(true); // ✅ Local modal state
 
   const handleFileChange = (e) => {
     setFiles(Array.from(e.target.files));
+  };
+
+  const handleClose = () => {
+    setIsModalVisible(false);
+    navigate(-1); // Navigate back
   };
 
   const handleSubmit = async () => {
@@ -71,19 +77,27 @@ function UploadAssignment({ onClose = () => {} }) {
 
       await addDoc(collection(db, "assignments"), assignment);
       alert("Assignment created and visible to learners.");
-      if (typeof onClose === "function") {
-        onClose();
-      }
+
+      // ✅ Clear inputs
+      setWrittenTitle("");
+      setFileTitle("");
+      setAssignmentContent("");
+      setFiles([]);
+
+      // ✅ Close modal
+      handleClose();
     } catch (error) {
       console.error("Error submitting assignment:", error);
       alert("An error occurred while creating the assignment.");
     }
   };
 
+  if (!isModalVisible) return null;
+
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center modal-overlay z-50"
-      onClick={(e) => e.target.classList.contains("modal-overlay") && onClose()}
+      className=" px-4 fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50"
+      onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl max-h-[80vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-6 text-center">
@@ -155,7 +169,7 @@ function UploadAssignment({ onClose = () => {} }) {
         {/* Action Buttons */}
         <div className="flex justify-end space-x-4">
           <button
-            onClick={() => typeof onClose === "function" && onClose()}
+            onClick={handleClose}
             className="bg-gray-600 text-white px-6 py-3 rounded hover:bg-gray-700 transition"
           >
             Cancel
