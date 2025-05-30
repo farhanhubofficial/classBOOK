@@ -1,8 +1,12 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom"; // ✅ Added
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase-config";
 
-function UploadAssignment({ onClose, classroomName }) {
+function UploadAssignment({ onClose = () => {} }) {
+  const { classroomName } = useParams(); // ✅ Extract classroom name from URL
+
+
   const [writtenTitle, setWrittenTitle] = useState("");
   const [fileTitle, setFileTitle] = useState("");
   const [assignmentContent, setAssignmentContent] = useState("");
@@ -19,6 +23,11 @@ function UploadAssignment({ onClose, classroomName }) {
     }
     if (!assignmentContent && files.length === 0) {
       alert("Please provide assignment content or upload files.");
+      return;
+    }
+
+    if (!classroomName) {
+      alert("Classroom name is missing.");
       return;
     }
 
@@ -62,7 +71,9 @@ function UploadAssignment({ onClose, classroomName }) {
 
       await addDoc(collection(db, "assignments"), assignment);
       alert("Assignment created and visible to learners.");
-      onClose();
+      if (typeof onClose === "function") {
+        onClose();
+      }
     } catch (error) {
       console.error("Error submitting assignment:", error);
       alert("An error occurred while creating the assignment.");
@@ -82,10 +93,7 @@ function UploadAssignment({ onClose, classroomName }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Written Content Section */}
           <div>
-            <label
-              htmlFor="writtenTitle"
-              className="block text-sm font-semibold mb-2"
-            >
+            <label htmlFor="writtenTitle" className="block text-sm font-semibold mb-2">
               Written Content Title
             </label>
             <input
@@ -97,10 +105,7 @@ function UploadAssignment({ onClose, classroomName }) {
               className="w-full border border-gray-300 p-3 rounded mb-6"
             />
 
-            <label
-              htmlFor="assignmentContent"
-              className="block text-sm font-semibold mb-2"
-            >
+            <label htmlFor="assignmentContent" className="block text-sm font-semibold mb-2">
               Assignment Content
             </label>
             <textarea
@@ -114,10 +119,7 @@ function UploadAssignment({ onClose, classroomName }) {
 
           {/* File Upload Section */}
           <div>
-            <label
-              htmlFor="fileTitle"
-              className="block text-sm font-semibold mb-2"
-            >
+            <label htmlFor="fileTitle" className="block text-sm font-semibold mb-2">
               File Upload Title
             </label>
             <input
@@ -153,7 +155,7 @@ function UploadAssignment({ onClose, classroomName }) {
         {/* Action Buttons */}
         <div className="flex justify-end space-x-4">
           <button
-            onClick={onClose}
+            onClick={() => typeof onClose === "function" && onClose()}
             className="bg-gray-600 text-white px-6 py-3 rounded hover:bg-gray-700 transition"
           >
             Cancel
