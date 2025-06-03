@@ -21,7 +21,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 function UpperIntermediate() {
-  const level = "B2 ( Upper Intermediate)";
+  const level = "B2 (Upper Intermediate)";
   const [students, setStudents] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -365,13 +365,13 @@ function UpperIntermediate() {
               <h2 className="text-xl font-bold mb-4">Classroom Actions</h2>
               <button
                 className="bg-blue-600 text-white px-4 py-2 rounded-md"
-                onClick={() => setViewingSubmissionFor(selectedClassroom.name)} // Viewing Assignment
+      onClick={() => navigate(`/admin/view-assignments/${selectedClassroom.name}`)}
               >
                 View Submitted Assignments
               </button>
               <button
                 className="bg-yellow-600 text-white px-4 py-2 rounded-md mt-4"
-                onClick={() => setUploadingAssignmentFor(selectedClassroom.name)} // Upload Assignment
+      onClick={() => navigate(`/admin/upload-assignments/${selectedClassroom.name}`)}
               >
                 Upload Assignment
               </button>
@@ -585,4 +585,4 @@ function UpperIntermediate() {
   );
 }
 
-export default UpperIntermediate;
+export default UpperIntermediate

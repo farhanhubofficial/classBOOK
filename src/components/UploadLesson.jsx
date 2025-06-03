@@ -1,35 +1,70 @@
 import React, { useState } from "react";
+import { db, storage } from "../firebase-config"; // adjust the path as needed
+import { collection, doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 function UploadLesson({ onClose, classroomName }) {
   const [title, setTitle] = useState("");
   const [lessonContent, setLessonContent] = useState("");
   const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e) => {
     setFiles(Array.from(e.target.files));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim()) {
       alert("Please enter a lesson title.");
       return;
     }
 
-    if (!lessonContent && files.length === 0) {
+    if (!lessonContent.trim() && files.length === 0) {
       alert("Please provide lesson content or upload files.");
       return;
     }
 
-    console.log("Lesson Submitted", {
-      classroomName,
-      title,
-      lessonContent,
-      files,
-    });
+    setUploading(true);
 
-    // Firebase logic here
+    try {
+      const lessonRef = doc(db, "lessons", title.trim());
+      const lessonSnapshot = await getDoc(lessonRef);
 
-    onClose();
+      const fileUploadPromises = files.map(async (file) => {
+        const storageRef = ref(
+          storage,
+          `classrooms/${classroomName}/lessons/${title}/${file.name}`
+        );
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        return {
+          name: file.name,
+          url: downloadURL,
+        };
+      });
+
+      const uploadedFiles = await Promise.all(fileUploadPromises);
+
+      const lessonData = {
+        title: title.trim(),
+        content: lessonContent.trim(),
+        files: uploadedFiles,
+        createdAt: Timestamp.now(),
+        classroom: classroomName,
+        category: "learner",
+      };
+
+      // Use setDoc with merge: true to update the document if it exists
+      await setDoc(lessonRef, lessonData, { merge: true });
+
+      alert("Lesson uploaded successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Error uploading lesson:", error);
+      alert("Failed to upload lesson. Please try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -42,23 +77,25 @@ function UploadLesson({ onClose, classroomName }) {
           Upload Lesson - {classroomName}
         </h2>
 
-        {/* Title for Lesson Title */}
-        
+        <div className="mb-8">
+          <h3 className="text-2xl font-bold text-gray-800 border-b pb-2">
+            Upload Lesson Details
+          </h3>
+        </div>
 
-        {/* Flex Layout for Content and File Upload */}
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Section for Lesson Content */}
           <div className="flex-1">
             <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-2">Lesson Title</h3>
-          <input
-            type="text"
-            placeholder="Enter Lesson Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border border-gray-300 p-3 rounded"
-          />
-        </div>
+              <h3 className="text-xl font-semibold mb-2">Lesson Title</h3>
+              <input
+                type="text"
+                placeholder="Enter Lesson Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full border border-gray-300 p-3 rounded"
+              />
+            </div>
+
             <h3 className="text-xl font-semibold mb-2">Lesson Content</h3>
             <textarea
               className="w-full border border-gray-300 p-4 rounded min-h-[200px]"
@@ -68,18 +105,7 @@ function UploadLesson({ onClose, classroomName }) {
             />
           </div>
 
-          {/* Section for File Upload */}
           <div className="flex-1">
-            <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-2">Lesson Title</h3>
-          <input
-            type="text"
-            placeholder="Enter Lesson Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border border-gray-300 p-3 rounded"
-          />
-        </div>
             <h3 className="text-xl font-semibold mb-2">Upload Lesson Files (optional)</h3>
             <div className="border border-gray-300 p-4 rounded bg-gray-50">
               <input
@@ -99,19 +125,20 @@ function UploadLesson({ onClose, classroomName }) {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="mt-8 flex justify-end gap-4">
           <button
             className="bg-gray-600 text-white px-6 py-3 rounded"
             onClick={onClose}
+            disabled={uploading}
           >
             Cancel
           </button>
           <button
             className="bg-blue-600 text-white px-6 py-3 rounded"
             onClick={handleSubmit}
+            disabled={uploading}
           >
-            Submit Lesson
+            {uploading ? "Uploading..." : "Submit Lesson"}
           </button>
         </div>
       </div>
