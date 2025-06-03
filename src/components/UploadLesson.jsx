@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { db, storage } from "../firebase-config"; // adjust the path as needed
-import { collection, doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
+import { db, storage } from "../firebase-config";
+import { collection, addDoc, Timestamp, getDoc, doc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 
 function UploadLesson({ onClose, classroomName }) {
   const [title, setTitle] = useState("");
@@ -27,9 +28,28 @@ function UploadLesson({ onClose, classroomName }) {
     setUploading(true);
 
     try {
-      const lessonRef = doc(db, "lessons", title.trim());
-      const lessonSnapshot = await getDoc(lessonRef);
+      // Get the current user for potential use in students list
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
 
+      let studentInfo = [];
+
+      if (currentUser) {
+        const userRef = doc(db, "users", currentUser.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          studentInfo.push({
+            id: currentUser.uid,
+            email: currentUser.email,
+            firstName: userData.firstName || "",
+            lastName: userData.lastName || "",
+          });
+        }
+      }
+
+      // Upload files and get download URLs
       const fileUploadPromises = files.map(async (file) => {
         const storageRef = ref(
           storage,
@@ -45,17 +65,23 @@ function UploadLesson({ onClose, classroomName }) {
 
       const uploadedFiles = await Promise.all(fileUploadPromises);
 
+      // Create lesson object
       const lessonData = {
         title: title.trim(),
+        writtenTitle: title.trim(),
+        fileTitle: null,
         content: lessonContent.trim(),
         files: uploadedFiles,
         createdAt: Timestamp.now(),
+        date: new Date().toISOString(),
         classroom: classroomName,
         category: "learner",
+        students: studentInfo,
       };
 
-      // Use setDoc with merge: true to update the document if it exists
-      await setDoc(lessonRef, lessonData, { merge: true });
+      // Add lesson to Firestore
+      const lessonsRef = collection(db, "lessons");
+      await addDoc(lessonsRef, lessonData);
 
       alert("Lesson uploaded successfully!");
       onClose();

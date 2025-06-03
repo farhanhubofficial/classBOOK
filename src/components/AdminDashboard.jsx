@@ -184,7 +184,7 @@ const AdminDashboard = () => {
         </header>
 
         {/* Page Outlet */}
-        <div className="mt-5 bg-white rounded shadow p-5">
+<div className="mt-5 p-5 rounded-lg shadow-md w-full max-w-full">
           <Outlet />
         </div>
       </main>

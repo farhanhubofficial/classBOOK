@@ -188,7 +188,7 @@ userData?.curriculum === "Arabic Course"
         </div>
 
         {/* Page Content */}
-        <div className="mt-5 p-5 bg-gray-50 rounded-lg shadow-md h-full">
+<div className="mt-5 p-5 rounded-lg shadow-md w-full max-w-full">
           <Outlet />
         </div>
       </main>
