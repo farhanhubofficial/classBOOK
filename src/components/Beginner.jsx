@@ -10,7 +10,9 @@ import {
   setDoc,
   deleteDoc,
   updateDoc,
+  
 } from "firebase/firestore";
+import { addDoc, collection as fbCollection } from "firebase/firestore";
 import { db } from "../firebase-config";
 import {
   FaEdit,
@@ -40,6 +42,9 @@ function Beginner() {
   const [uploadingLessonFor, setUploadingLessonFor] = useState(null);
   const [viewingSubmissionFor, setViewingSubmissionFor] = useState(null);
   const [expandedRows, setExpandedRows] = useState([]);
+  const [pastingLinkFor, setPastingLinkFor] = useState(null);
+const [meetLink, setMeetLink] = useState("");
+
 
   const navigate = useNavigate();
 
@@ -234,6 +239,68 @@ function Beginner() {
       setUploadingLessonFor(null);
     }
   };
+ const handlePasteLinkSubmit = async () => {
+  if (!meetLink) {
+    alert("Please paste a valid link.");
+    return;
+  }
+
+  try {
+    const classroomRef = doc(
+      db,
+      "englishLevels",
+      level,
+      "subClassrooms",
+      pastingLinkFor
+    );
+
+    // Update the classroom document with the Google Meet link
+    await updateDoc(classroomRef, {
+      googleMeet: meetLink,
+    });
+
+    // Query users who belong to this classroom
+    const usersQuery = collection(db, "users");
+    const usersSnapshot = await getDocs(usersQuery);
+
+    // Filter users in the classroom and update their googleMeet field
+    const batchUpdates = [];
+    usersSnapshot.forEach((userDoc) => {
+      const userData = userDoc.data();
+      if (
+        userData.classroom === pastingLinkFor &&
+        userData.category === "learner" &&
+        userData.curriculum === "English Course"
+      ) {
+        const userRef = doc(db, "users", userDoc.id);
+        batchUpdates.push(
+          updateDoc(userRef, {
+            googleMeet: meetLink,
+          })
+        );
+      }
+    });
+
+    await Promise.all(batchUpdates);
+
+    alert("Google Meet link added and updated for all students!");
+
+    // Update local state to reflect the change
+    setClassrooms((prev) =>
+      prev.map((c) =>
+        c.name === pastingLinkFor ? { ...c, googleMeet: meetLink } : c
+      )
+    );
+
+    setMeetLink("");
+    setPastingLinkFor(null);
+  } catch (error) {
+    console.error("Error adding link:", error);
+    alert("Failed to add the link. Please try again.");
+  }
+};
+
+
 
   return (
     <div className="w-full max-w-screen overflow-x-hidden relative py-6">
@@ -291,7 +358,7 @@ function Beginner() {
             value={searchTerm}
           />
         </div>
-      </div>
+      </div>,
 
       {/* Student table */}
       <div className="w-full max-w-4xl mx-auto space-y-4">
@@ -381,6 +448,13 @@ function Beginner() {
               >
                 Upload Lesson
               </button>
+              <button
+  className="bg-teal-600 text-white px-4 py-2 rounded-md mt-4"
+  onClick={() => setPastingLinkFor(selectedClassroom.name)}
+>
+  Paste Link
+</button>
+
             </div>
           </div>
         </div>
@@ -424,6 +498,44 @@ function Beginner() {
           </div>
         </div>
       )}
+      {pastingLinkFor && (
+  <div
+    className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 modal-overlay"
+    onClick={handleModalClose}
+  >
+    <div
+      className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h2 className="text-lg font-bold mb-4">Paste Google Meet Link</h2>
+      <input
+        type="url"
+        placeholder="Paste the Link"
+        value={meetLink}
+        onChange={(e) => setMeetLink(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded mb-4"
+      />
+      <div className="flex justify-end gap-3">
+        <button
+          className="bg-gray-300 text-black px-4 py-2 rounded"
+          onClick={() => {
+            setMeetLink("");
+            setPastingLinkFor(null);
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={handlePasteLinkSubmit}
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {/* Register Classroom Modal */}
 {formOpen && (
   <div

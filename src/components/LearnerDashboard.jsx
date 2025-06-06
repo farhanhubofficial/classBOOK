@@ -31,6 +31,7 @@ function LearnerDashboard() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setUserData(data);
+          setGoogleMeetLink(data.googleMeet)
           setAttendance({
             presentDays: data.daysPresent || 0,
             absentDays: data.daysAbsent || 0,
@@ -148,18 +149,7 @@ function LearnerDashboard() {
           {getGreeting()},{" "}
           <span className="text-green-600">{userData?.firstName || "Learner"}</span> 👋
         </h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded shadow overflow-auto">
-            <h2 className="text-xl font-semibold mb-4">📅 Calendar</h2>
-
-            <div className="md:flex gap-6">
-              <div className="flex-shrink-0">
-                <Calendar onChange={setDate} value={date} />
-              </div>
-
-              {/* Styled Google Meet Input Section */}
-              <div className="mt-4 md:mt-0 md:ml-4 w-full">
+<div className="mt-4 md:mt-0 md:ml-4 w-full">
                 <label className="block text-gray-800 font-semibold text-sm mb-2 tracking-wide">
                   Google Meet Link
                 </label>
@@ -167,7 +157,7 @@ function LearnerDashboard() {
                 <textarea
                   rows={2}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none text-gray-700 placeholder-gray-400"
-                  placeholder="F ind your Google Meet link here..."
+                  placeholder="Find your Google Meet link here..."
                   value={googleMeetLink}
                   onChange={(e) => setGoogleMeetLink(e.target.value)}
                 />
@@ -185,6 +175,17 @@ function LearnerDashboard() {
                   </div>
                 )}
               </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded shadow overflow-auto">
+            <h2 className="text-xl font-semibold mb-4">📅 Calendar</h2>
+
+            <div className="md:flex gap-6">
+              <div className="flex-shrink-0">
+                <Calendar onChange={setDate} value={date} />
+              </div>
+
+              {/* Styled Google Meet Input Section */}
+              
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-4">

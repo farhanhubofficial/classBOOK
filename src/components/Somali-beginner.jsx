@@ -21,8 +21,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 function SomaliBeginner() {
-const level = "Bilow (Beginner)";
-
+  const level = "Bilow (Beginner)";
   const [students, setStudents] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -51,18 +50,17 @@ const level = "Bilow (Beginner)";
   };
 
   const fetchStudents = async () => {
-  const q = collection(db, "users");
-  const snap = await getDocs(q);
-  const levelStudents = [];
-  snap.forEach((doc) => {
-    const data = doc.data();
-    if (data.grade === "Bilow (Beginner)" && data.curriculum === "Somali Course") {
-      levelStudents.push({ id: doc.id, ...data });
-    }
-  });
-  setStudents(levelStudents);
-};
-
+    const q = collection(db, "users");
+    const snap = await getDocs(q);
+    const levelStudents = [];
+    snap.forEach((doc) => {
+      const data = doc.data();
+      if (data.grade === level && data.curriculum === "Somali Course") {
+        levelStudents.push({ id: doc.id, ...data });
+      }
+    });
+    setStudents(levelStudents);
+  };
 
   useEffect(() => {
     fetchStudents();
@@ -70,7 +68,7 @@ const level = "Bilow (Beginner)";
 
   useEffect(() => {
     const fetchClassrooms = async () => {
-      const q = collection(db, "englishLevels", level, "subClassrooms");
+      const q = collection(db, "somaliLevels", level, "subClassrooms");
       const snap = await getDocs(q);
       const levelClassrooms = [];
       snap.forEach((doc) => {
@@ -96,7 +94,7 @@ const level = "Bilow (Beginner)";
       return;
     }
 
-    const classroomRef = doc(db, "englishLevels", level, "subClassrooms", form.name);
+    const classroomRef = doc(db, "somaliLevels", level, "subClassrooms", form.name);
     await setDoc(classroomRef, form);
     alert("Classroom registered!");
 
@@ -121,7 +119,7 @@ const level = "Bilow (Beginner)";
   const handleDelete = async (classroomName) => {
     const confirmed = window.confirm("Are you sure you want to delete this classroom?");
     if (confirmed) {
-      const classroomRef = doc(db, "englishLevels", level, "subClassrooms", classroomName);
+      const classroomRef = doc(db, "somaliLevels", level, "subClassrooms", classroomName);
       await deleteDoc(classroomRef);
       alert("Classroom deleted!");
 
@@ -153,7 +151,7 @@ const level = "Bilow (Beginner)";
       return;
     }
 
-    const classroomRef = doc(db, "englishLevels", level, "subClassrooms", form.name);
+    const classroomRef = doc(db, "somaliLevels", level, "subClassrooms", form.name);
     await updateDoc(classroomRef, form);
 
     // Update students: remove from old, assign new ones
@@ -223,7 +221,7 @@ const level = "Bilow (Beginner)";
   };
 
   const handleClose = () => {
-    navigate("/admin/curriculum/english-course");
+    navigate("/admin/curriculum/somali-course");
   };
 
   const handleModalClose = (e) => {
@@ -293,7 +291,7 @@ const level = "Bilow (Beginner)";
             value={searchTerm}
           />
         </div>
-      </div>
+      </div>,
 
       {/* Student table */}
       <div className="w-full max-w-4xl mx-auto space-y-4">
@@ -367,13 +365,13 @@ const level = "Bilow (Beginner)";
               <h2 className="text-xl font-bold mb-4">Classroom Actions</h2>
               <button
                 className="bg-blue-600 text-white px-4 py-2 rounded-md"
-                onClick={() => setViewingSubmissionFor(selectedClassroom.name)} // Viewing Assignment
+      onClick={() => navigate(`/admin/view-assignments/${selectedClassroom.name}`)}
               >
                 View Submitted Assignments
               </button>
               <button
                 className="bg-yellow-600 text-white px-4 py-2 rounded-md mt-4"
-                onClick={() => setUploadingAssignmentFor(selectedClassroom.name)} // Upload Assignment
+      onClick={() => navigate(`/admin/upload-assignments/${selectedClassroom.name}`)}
               >
                 Upload Assignment
               </button>
@@ -587,4 +585,4 @@ const level = "Bilow (Beginner)";
   );
 }
 
-export default SomaliBeginner;
+export default SomaliBeginner

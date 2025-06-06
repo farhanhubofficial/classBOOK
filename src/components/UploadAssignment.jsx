@@ -1,26 +1,26 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   collection,
+  addDoc,
   query,
   where,
   getDocs,
-  addDoc,
-  updateDoc,
-  doc,
+  Timestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase-config";
 
-function UploadLesson() {
+function UploadAssignment() {
   const { classroomName } = useParams();
   const navigate = useNavigate();
 
   const [writtenTitle, setWrittenTitle] = useState("");
   const [fileTitle, setFileTitle] = useState("");
-  const [lessonContent, setLessonContent] = useState("");
+  const [assignmentContent, setAssignmentContent] = useState("");
   const [files, setFiles] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e) => {
     setFiles(Array.from(e.target.files));
@@ -36,20 +36,21 @@ function UploadLesson() {
       alert("Please enter at least one title.");
       return;
     }
-    if (!lessonContent.trim() && files.length === 0) {
-      alert("Please provide lesson content or upload files.");
+    if (!assignmentContent.trim() && files.length === 0) {
+      alert("Please provide assignment content or upload files.");
       return;
     }
     if (!classroomName) {
-      alert("Missing classroom name.");
+      alert("Missing classroom name in URL.");
       return;
     }
 
-    const title = writtenTitle || fileTitle || "Untitled Lesson";
-    const date = new Date().toISOString();
+    setUploading(true);
+
+    const title = writtenTitle || fileTitle || "Untitled Assignment";
 
     try {
-      // 1. Get learners
+      // Get learners
       const usersQuery = query(
         collection(db, "users"),
         where("role", "==", "learner"),
@@ -66,12 +67,12 @@ function UploadLesson() {
         };
       });
 
-      // 2. Upload files
+      // Upload files
       const uploadedFiles = await Promise.all(
         files.map(async (file) => {
           const fileRef = ref(
             storage,
-            `lessons/${classroomName}/${title}/${file.name}`
+            `assignments/${classroomName}/${title}/${file.name}`
           );
           await uploadBytes(fileRef, file);
           const url = await getDownloadURL(fileRef);
@@ -79,50 +80,42 @@ function UploadLesson() {
         })
       );
 
-      // 3. Prepare lesson data
-      const lessonData = {
+      // Save assignment
+      const assignmentData = {
         title,
         writtenTitle: writtenTitle || null,
         fileTitle: fileTitle || null,
-        content: lessonContent,
+        content: assignmentContent,
         files: uploadedFiles,
-        date,
+        createdAt: Timestamp.now(),
+        date: new Date().toISOString(),
         classroom: classroomName,
         category: "learner",
         students: learners,
       };
 
-      // 4. Check if a lesson already exists with the same title + classroom
-      const lessonsRef = collection(db, "lessons");
-      const existingQuery = query(
-        lessonsRef,
-        where("title", "==", title),
-        where("classroom", "==", classroomName)
-      );
-      const existingSnap = await getDocs(existingQuery);
+      await addDoc(collection(db, "assignments"), assignmentData);
 
-      if (!existingSnap.empty) {
-        // Update existing
-        const existingDocId = existingSnap.docs[0].id;
-        await updateDoc(doc(db, "lessons", existingDocId), lessonData);
-        alert("Lesson updated successfully.");
-      } else {
-        // Add new
-        await addDoc(lessonsRef, lessonData);
-        alert("Lesson uploaded successfully.");
-      }
-
-      // Reset
+      alert("Assignment uploaded successfully!");
       setWrittenTitle("");
       setFileTitle("");
-      setLessonContent("");
+      setAssignmentContent("");
       setFiles([]);
       handleClose();
     } catch (err) {
-      console.error("Error uploading lesson:", err);
-      alert("An error occurred while uploading lesson.");
+      console.error("Error uploading assignment:", err);
+      alert("Failed to upload assignment.");
+    } finally {
+      setUploading(false);
     }
   };
+
+  useEffect(() => {
+    if (!classroomName) {
+      alert("No classroom specified in URL.");
+      navigate("/admin/dashboard");
+    }
+  }, [classroomName, navigate]);
 
   if (!isModalVisible) return null;
 
@@ -133,11 +126,10 @@ function UploadLesson() {
     >
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-6xl max-h-[80vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-6 text-center">
-          Upload Lesson - {classroomName}
+          Upload Assignment - {classroomName}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {/* Written Section */}
           <div>
             <label className="block text-sm font-semibold mb-2">
               Written Title
@@ -151,17 +143,16 @@ function UploadLesson() {
             />
 
             <label className="block text-sm font-semibold mb-2">
-              Lesson Content
+              Assignment Content
             </label>
             <textarea
-              value={lessonContent}
-              onChange={(e) => setLessonContent(e.target.value)}
-              placeholder="Write lesson content"
+              value={assignmentContent}
+              onChange={(e) => setAssignmentContent(e.target.value)}
+              placeholder="Write assignment content"
               className="w-full border border-gray-300 p-4 rounded min-h-[200px]"
             />
           </div>
 
-          {/* File Upload */}
           <div>
             <label className="block text-sm font-semibold mb-2">
               File Upload Title
@@ -175,7 +166,7 @@ function UploadLesson() {
             />
 
             <label className="block text-sm font-semibold mb-2">
-              Upload Lesson Files
+              Upload Assignment Files
             </label>
             <div className="border border-gray-300 p-4 rounded bg-gray-50">
               <input type="file" multiple onChange={handleFileChange} />
@@ -200,8 +191,9 @@ function UploadLesson() {
           <button
             onClick={handleSubmit}
             className="bg-blue-600 text-white px-6 py-3 rounded"
+            disabled={uploading}
           >
-            Submit Lesson
+            {uploading ? "Uploading..." : "Submit Assignment"}
           </button>
         </div>
       </div>
@@ -209,4 +201,4 @@ function UploadLesson() {
   );
 }
 
-export default UploadLesson;
+export default UploadAssignment;
