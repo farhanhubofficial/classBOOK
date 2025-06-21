@@ -162,7 +162,7 @@ function LearnerDashboard() {
                   onChange={(e) => setGoogleMeetLink(e.target.value)}
                 />
 
-                {googleMeetLink.includes("https://meet.google.com") && (
+{typeof googleMeetLink === "string" && googleMeetLink.includes("https://meet.google.com") && (
                   <div className="mt-2">
                     <a
                       href={googleMeetLink}
