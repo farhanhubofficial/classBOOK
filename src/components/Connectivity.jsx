@@ -1,5 +1,14 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import IgcseHome from './IgcseHome';
+import CurriculumHome from './CurriculumHome';
+
+import CbcHome from './CbcHome';
+
+import GradeView from './GradeView';
+import SubjectView from './SubjectView';
+import TopicView from './TopicView';
+
 
 import Header from './Header';
 import Home from './Home';
@@ -18,7 +27,7 @@ import UpperIntermediate from './UpperIntermediate';
 
 import StudentDashboard from './StudentDashboard';
 import LearnersDashboard from './LearnerDashboard';
-import Cbc from './Cbc';
+
 import AdminDashboard from './AdminDashboard';
 import DashboardHome from './DashboardHome';
 import Somali from './Somali';
@@ -77,7 +86,23 @@ useEffect(() => {
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminDashboard />}>
           <Route path="dashboard" element={<DashboardHome />} />
-          <Route path="curriculum/cbc" element={<Cbc />} />
+
+
+          
+<Route path="curriculum/:curriculum">
+  <Route index element={<CurriculumHome />} />
+  <Route path=":grade" element={<GradeView />} />
+  <Route path=":grade/:subject" element={<SubjectView />} />
+  <Route path=":grade/:subject/:topicId" element={<TopicView />} />
+</Route>
+
+
+
+
+
+
+
+
           <Route path="curriculum/english-course" element={<EnglishClass />} />
           <Route path="curriculum/english-course/beginner" element={<Beginner />} />
           <Route path="curriculum/english-course/elementary" element={<Elementary />} />
