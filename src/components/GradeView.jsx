@@ -92,16 +92,16 @@ const GradeView = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto relative">
       {/* Top Bar */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <button
           onClick={() => navigate(-1)}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded flex items-center"
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded w-full sm:w-auto"
         >
           ← Go Back
         </button>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full sm:w-auto"
         >
           ➕ Register New Subject
         </button>
@@ -113,21 +113,21 @@ const GradeView = () => {
       </h3>
 
       {/* Subject Cards */}
-      <div className="flex flex-wrap gap-4 justify-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 justify-items-center">
         {subjects.map((subject) => (
           <div
             key={subject.id}
-            className="bg-green-100 p-4 rounded shadow-md w-64 flex flex-col justify-between"
+            className="bg-green-100 p-4 rounded shadow-md w-full max-w-xs flex flex-col justify-between"
           >
             <button
               onClick={() =>
-                navigate(`/admin/curriculum/${curriculum}/${grade}/${subject.name}`) // ✅ dynamic path
+                navigate(`/admin/curriculum/${curriculum}/${grade}/${subject.name}`)
               }
-              className="bg-green-500 text-white w-full py-2 rounded hover:bg-green-600 mb-2"
+              className="bg-green-500 text-white w-full py-2 rounded hover:bg-green-600 mb-2 text-sm sm:text-base"
             >
               {subject.name.toUpperCase()}
             </button>
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-xs sm:text-sm">
               <button
                 onClick={() => handleEditClick(subject)}
                 className="text-green-600 hover:text-green-800"

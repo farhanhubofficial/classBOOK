@@ -208,12 +208,18 @@ const SubjectView = () => {
                 {topic.title}
               </h4>
               <p className="text-sm text-gray-600">{topic.description}</p>
-              {topic.videoUrl && (
-                <video controls className="w-full mt-2 rounded">
-                  <source src={topic.videoUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              )}
+             {topic.videoUrl && (
+  <div className="mt-2 rounded overflow-hidden aspect-video max-h-64">
+    <video
+      controls
+      className="w-full h-full object-cover rounded"
+    >
+      <source src={topic.videoUrl} type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  </div>
+)}
+
               {/* Edit & Delete Buttons */}
               <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
                 <button
