@@ -10,6 +10,11 @@ import SubjectView from './SubjectView';
 import TopicView from './TopicView';
 
 
+import StudentGradeView from './StudentGradeView';
+import StudentSubjectView from './StudentSubjectView';
+import StudentTopicView from './StudentTopicView';
+
+
 import Header from './Header';
 import Home from './Home';
 import Login from './Login';
@@ -129,7 +134,10 @@ useEffect(() => {
         {/* Student Routes */}
         <Route path="/students" element={<StudentDashboard />}>
           <Route path="dashboard" element={<LearnersDashboard />} />
-          <Route path="subjects" element={<StudentSubjects />} />
+          <Route path="subjects" element={<StudentGradeView />} />
+          <Route path="curriculum/:curriculum/:grade/:subject" element={<StudentSubjectView />} />
+<Route path="curriculum/:curriculum/:grade/:subject/:topicId" element={<StudentTopicView />} />
+
           <Route path="subjects/:subject" element={<SubjectVideos />} />
           <Route path="assignments" element={<StudentAssignments />} />
           <Route path="settings" element={<div>Student Settings Page</div>} />

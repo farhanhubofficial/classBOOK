@@ -1,7 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const grades = ["pp1", "pp2", ...Array.from({ length: 12 }, (_, i) => `grade_${i + 1}`)];
+const grades = [
+  "Pre-Primary 1 (PP1)", "Pre-Primary 2 (PP2)",
+  "Grade 1", "Grade 2", "Grade 3",
+  "Grade 4", "Grade 5", "Grade 6",
+  "Grade 7", "Grade 8", "Grade 9"
+];
 
 const CbcHome = () => {
   const navigate = useNavigate();
@@ -16,7 +21,7 @@ const CbcHome = () => {
             onClick={() => navigate(`/admin/curriculum/cbc/${grade}`)}
             className="bg-blue-200 p-4 rounded-lg cursor-pointer text-center hover:bg-blue-300"
           >
-            <h3 className="font-semibold">{grade.replace("_", " ").toUpperCase()}</h3>
+            <h3 className="font-semibold">{grade}</h3>
           </div>
         ))}
       </div>

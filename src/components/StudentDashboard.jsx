@@ -121,7 +121,7 @@ userData?.curriculum === "Arabic Course"
               </button>
             </>
           ) : (
-            <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/subjects")}>
+            <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/subjects")}>
               <MdSubject /> Subjects
             </button>
           )}

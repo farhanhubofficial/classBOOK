@@ -1,0 +1,78 @@
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { db } from "../firebase-config";
+import { collection, getDocs } from "firebase/firestore";
+
+const StudentSubjectView = () => {
+  const { curriculum, grade, subject } = useParams(); // ✅ include curriculum
+  const [topics, setTopics] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const topicsRef = collection(
+          db,
+          curriculum,
+          grade,
+          "subjects",
+          subject,
+          "topics"
+        );
+        const snapshot = await getDocs(topicsRef);
+        const topicList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTopics(topicList);
+      } catch (error) {
+        console.error("Error fetching topics:", error);
+      }
+    };
+
+    fetchTopics();
+  }, [curriculum, grade, subject]);
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto">
+      <div className="mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded"
+        >
+          ← Go Back
+        </button>
+      </div>
+
+      <h3 className="text-xl font-bold mb-4 text-center">
+        {subject.toUpperCase()} Topics
+      </h3>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {topics.map((topic) => (
+          <div
+            key={topic.id}
+            className="border p-4 rounded-lg hover:bg-blue-50 cursor-pointer"
+          onClick={() =>
+  navigate(`/students/curriculum/${curriculum}/${grade}/${subject}/${topic.id}`)
+}
+
+          >
+            <h4 className="font-semibold text-lg">{topic.title}</h4>
+            <p className="text-sm text-gray-600">{topic.description}</p>
+            {topic.videoUrl && (
+              <div className="mt-2 aspect-video overflow-hidden rounded">
+                <video className="w-full h-full object-cover" controls>
+                  <source src={topic.videoUrl} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default StudentSubjectView;

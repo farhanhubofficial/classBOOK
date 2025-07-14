@@ -109,7 +109,7 @@ const GradeView = () => {
 
       {/* Title */}
       <h3 className="text-xl font-bold mb-4 text-center">
-        {grade.replace("_", " ").toUpperCase()} Subjects
+        {grade} Subjects
       </h3>
 
       {/* Subject Cards */}
