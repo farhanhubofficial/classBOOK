@@ -13,10 +13,10 @@ const IgcseHome = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <h3 className="text-xl font-bold mb-4 text-center">Select an IGCSE Grade</h3>
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-        {IGCSEGrades.map((grade, index) => (
+        {IGCSEGrades.map((grade) => (
           <div
-            key={index}
-            onClick={() => navigate(`/admin/curriculum/igcse/${grade.toLowerCase().replace(/\s+/g, "_")}`)}
+            key={grade}
+            onClick={() => navigate(`/admin/curriculum/igcse/${grade}`)}
             className="bg-green-200 p-4 rounded-lg cursor-pointer text-center hover:bg-green-300"
           >
             <h3 className="font-semibold">{grade}</h3>
