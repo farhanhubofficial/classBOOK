@@ -16,7 +16,7 @@ import {
 } from "firebase/storage";
 
 const SubjectView = () => {
-  const { grade, subject } = useParams();
+  const { curriculum, grade, subject } = useParams(); // ✅ updated to include curriculum
   const [topics, setTopics] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [title, setTitle] = useState("");
@@ -30,11 +30,11 @@ const SubjectView = () => {
 
   useEffect(() => {
     fetchTopics();
-  }, [grade, subject]);
+  }, [curriculum, grade, subject]);
 
   const fetchTopics = async () => {
     try {
-      const topicsRef = collection(db, "cbc", grade, "subjects", subject, "topics");
+      const topicsRef = collection(db, curriculum, grade, "subjects", subject, "topics"); // ✅ use dynamic curriculum
       const snapshot = await getDocs(topicsRef);
       const topicList = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -48,7 +48,7 @@ const SubjectView = () => {
 
   const uploadFile = async (file, onProgress) => {
     const timestamp = Date.now();
-    const filePath = `cbc/${grade}/${subject}/${timestamp}_${file.name}`;
+    const filePath = `${curriculum}/${grade}/${subject}/${timestamp}_${file.name}`; // ✅ dynamic path
     const storageRef = ref(storage, filePath);
 
     return new Promise((resolve, reject) => {
@@ -109,8 +109,7 @@ const SubjectView = () => {
         updatedAt: new Date(),
       };
 
-      const topicsRef = collection(db, "cbc", grade, "subjects", subject, "topics");
-
+      const topicsRef = collection(db, curriculum, grade, "subjects", subject, "topics"); // ✅ updated
       if (isEditing && editingTopicId) {
         const docRef = doc(topicsRef, editingTopicId);
         await updateDoc(docRef, topicData);
@@ -143,7 +142,7 @@ const SubjectView = () => {
     if (!confirmDelete) return;
 
     try {
-      const topicDocRef = doc(db, "cbc", grade, "subjects", subject, "topics", topicId);
+      const topicDocRef = doc(db, curriculum, grade, "subjects", subject, "topics", topicId); // ✅ dynamic path
       await deleteDoc(topicDocRef);
       fetchTopics();
     } catch (err) {
@@ -202,23 +201,35 @@ const SubjectView = () => {
               <h4
                 className="font-semibold text-lg cursor-pointer"
                 onClick={() =>
-                  navigate(`/admin/curriculum/cbc/${grade}/${subject}/${topic.id}`)
+                  navigate(`/admin/curriculum/${curriculum}/${grade}/${subject}/${topic.id}`) // ✅ dynamic navigation
                 }
               >
                 {topic.title}
               </h4>
               <p className="text-sm text-gray-600">{topic.description}</p>
              {topic.videoUrl && (
-  <div className="mt-2 rounded overflow-hidden aspect-video max-h-64">
+  <div className="mt-2 rounded overflow-hidden max-h-64">
     <video
       controls
+      preload="metadata"
       className="w-full h-full object-cover rounded"
+      onLoadedMetadata={(e) => {
+        const video = e.target;
+        const duration = video.duration;
+        const formatted = `${Math.floor(duration / 60)}:${
+          Math.floor(duration % 60).toString().padStart(2, "0")
+        }`;
+        const label = video.nextElementSibling;
+        if (label) label.textContent = `Duration: ${formatted} min`;
+      }}
     >
       <source src={topic.videoUrl} type="video/mp4" />
       Your browser does not support the video tag.
     </video>
+    <p className="text-xs text-gray-500 mt-1">Loading duration...</p>
   </div>
 )}
+
 
               {/* Edit & Delete Buttons */}
               <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">

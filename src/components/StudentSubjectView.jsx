@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { db } from "../firebase-config";
 import { collection, getDocs } from "firebase/firestore";
 
@@ -7,6 +7,9 @@ const StudentSubjectView = () => {
   const { curriculum, grade, subject } = useParams(); // ✅ include curriculum
   const [topics, setTopics] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isStudent = location.pathname.startsWith("/students");
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -53,10 +56,11 @@ const StudentSubjectView = () => {
           <div
             key={topic.id}
             className="border p-4 rounded-lg hover:bg-blue-50 cursor-pointer"
-          onClick={() =>
-  navigate(`/students/curriculum/${curriculum}/${grade}/${subject}/${topic.id}`)
-}
-
+            onClick={() =>
+              navigate(
+                `${isStudent ? "/students" : "/admin"}/curriculum/${curriculum}/${grade}/${subject}/${topic.id}`
+              )
+            }
           >
             <h4 className="font-semibold text-lg">{topic.title}</h4>
             <p className="text-sm text-gray-600">{topic.description}</p>

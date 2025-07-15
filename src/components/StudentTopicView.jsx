@@ -4,20 +4,20 @@ import { db } from "../firebase-config";
 import { doc, getDoc } from "firebase/firestore";
 
 const StudentTopicView = () => {
-  const { grade, subject, topicId } = useParams();
+  const { curriculum, grade, subject, topicId } = useParams(); // 🟢 include curriculum
   const [topic, setTopic] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTopic = async () => {
-      const topicRef = doc(db, "cbc", grade, "subjects", subject, "topics", topicId);
+      const topicRef = doc(db, curriculum, grade, "subjects", subject, "topics", topicId); // 🟢 dynamic curriculum
       const topicSnap = await getDoc(topicRef);
       if (topicSnap.exists()) {
         setTopic(topicSnap.data());
       }
     };
     fetchTopic();
-  }, [grade, subject, topicId]);
+  }, [curriculum, grade, subject, topicId]);
 
   if (!topic) return <p className="text-center mt-10">Loading topic...</p>;
 
