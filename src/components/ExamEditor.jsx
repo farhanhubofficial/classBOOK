@@ -92,7 +92,7 @@ const ExamEditor = ({ onClose, initialContent = "", examId = null }) => {
           onClick={handleSave}
           className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
         >
-          💾 Save Exam
+          💾 Save Exa
         </button>
       </div>
     </div>
