@@ -8,6 +8,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  writeBatch,
 } from "firebase/firestore";
 import {
   ref,
@@ -28,30 +29,36 @@ const SubjectView = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingTopicId, setEditingTopicId] = useState(null);
   const [view, setView] = useState("topics");
-  const [showExamEditor, setShowExamEditor] = useState(false);
 
-const [selectedExam, setSelectedExam] = useState(null);
-
-
+  // Exams states
+  const [showExamEditor, setShowExamEditor] = useState(false); // for creating new exams
   const [exams, setExams] = useState([]);
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [examQuestions, setExamQuestions] = useState([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+
+  // inline update state
+  const [editorExam, setEditorExam] = useState(null);
+  const [isUpdatingExam, setIsUpdatingExam] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchTopics();
-     fetchExams();
+    fetchExams();
   }, [curriculum, grade, subject]);
 
-const fetchExams = async () => {
-  const examsRef = collection(db, curriculum, grade, "subjects", subject, "exams");
-  const snapshot = await getDocs(examsRef);
-  const examList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  setExams(examList);
-};
-
-
+  // -------- TOPICS --------
   const fetchTopics = async () => {
     try {
-      const topicsRef = collection(db, curriculum, grade, "subjects", subject, "topics");
+      const topicsRef = collection(
+        db,
+        curriculum,
+        grade,
+        "subjects",
+        subject,
+        "topics"
+      );
       const snapshot = await getDocs(topicsRef);
       const topicList = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -126,7 +133,14 @@ const fetchExams = async () => {
         updatedAt: new Date(),
       };
 
-      const topicsRef = collection(db, curriculum, grade, "subjects", subject, "topics");
+      const topicsRef = collection(
+        db,
+        curriculum,
+        grade,
+        "subjects",
+        subject,
+        "topics"
+      );
       if (isEditing && editingTopicId) {
         const docRef = doc(topicsRef, editingTopicId);
         await updateDoc(docRef, topicData);
@@ -155,11 +169,21 @@ const fetchExams = async () => {
   };
 
   const handleDeleteClick = async (topicId) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this topic?");
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this topic?"
+    );
     if (!confirmDelete) return;
 
     try {
-      const topicDocRef = doc(db, curriculum, grade, "subjects", subject, "topics", topicId);
+      const topicDocRef = doc(
+        db,
+        curriculum,
+        grade,
+        "subjects",
+        subject,
+        "topics",
+        topicId
+      );
       await deleteDoc(topicDocRef);
       fetchTopics();
     } catch (err) {
@@ -178,22 +202,160 @@ const fetchExams = async () => {
     setEditingTopicId(null);
   };
 
+  // -------- EXAMS --------
+  const fetchExams = async () => {
+    try {
+      const examsRef = collection(
+        db,
+        curriculum,
+        grade,
+        "subjects",
+        subject,
+        "exams"
+      );
+      const snapshot = await getDocs(examsRef);
+      const examList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setExams(examList);
+    } catch (err) {
+      console.error("Failed to fetch exams:", err);
+    }
+  };
+
+  const fetchExamQuestions = async (examId) => {
+    setLoadingQuestions(true);
+    try {
+      const questionsRef = collection(
+        db,
+        curriculum,
+        grade,
+        "subjects",
+        subject,
+        "exams",
+        examId,
+        "questions"
+      );
+      const snapshot = await getDocs(questionsRef);
+      const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      setExamQuestions(list);
+    } catch (e) {
+      console.error("Failed to fetch exam questions:", e);
+      alert("Failed to fetch exam questions");
+    } finally {
+      setLoadingQuestions(false);
+    }
+  };
+
+  const getExamQuestionsForEditor = async (examId) => {
+    const questionsRef = collection(
+      db,
+      curriculum,
+      grade,
+      "subjects",
+      subject,
+      "exams",
+      examId,
+      "questions"
+    );
+    const snapshot = await getDocs(questionsRef);
+    const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return list;
+  };
+
+  const openExam = async (exam) => {
+    setIsUpdatingExam(false);
+    setEditorExam(null);
+    setSelectedExam(exam);
+    await fetchExamQuestions(exam.id);
+  };
+
+  // OPEN INLINE UPDATE EDITOR
+  const updateExam = async (exam) => {
+    const qs = await getExamQuestionsForEditor(exam.id);
+    setSelectedExam(exam); // keep which exam we're in
+    setEditorExam({
+      id: exam.id,
+      title: exam.title || exam.id,
+      questions: qs,
+    });
+    setIsUpdatingExam(true);
+  };
+
+  const deleteExam = async (examId) => {
+    const confirmDelete = window.confirm(
+      "Delete this exam and all its questions?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const questionsRef = collection(
+        db,
+        curriculum,
+        grade,
+        "subjects",
+        subject,
+        "exams",
+        examId,
+        "questions"
+      );
+      const qSnap = await getDocs(questionsRef);
+      const batch = writeBatch(db);
+      qSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+      await batch.commit();
+
+      const examRef = doc(
+        db,
+        curriculum,
+        grade,
+        "subjects",
+        subject,
+        "exams",
+        examId
+      );
+      await deleteDoc(examRef);
+
+      alert("Exam deleted.");
+      setSelectedExam(null);
+      setExamQuestions([]);
+      fetchExams();
+    } catch (e) {
+      console.error("Failed to delete exam:", e);
+      alert("Failed to delete exam");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <h1 className="text-2xl font-bold text-center mb-2 text-gray-900">
         Grade: {grade.toUpperCase()}
       </h1>
       <div className="p-6 max-w-5xl mx-auto">
+        {/* Tabs */}
         <div className="flex justify-center gap-4 mb-6">
           <button
-            onClick={() => setView("topics")}
-            className={`px-4 py-2 rounded font-semibold ${view === "topics" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
+            onClick={() => {
+              setView("topics");
+              setSelectedExam(null);
+              setIsUpdatingExam(false);
+              setEditorExam(null);
+            }}
+            className={`px-4 py-2 rounded font-semibold ${
+              view === "topics" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"
+            }`}
           >
             Topics
           </button>
           <button
-            onClick={() => setView("exams")}
-            className={`px-4 py-2 rounded font-semibold ${view === "exams" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"}`}
+            onClick={() => {
+              setView("exams");
+              setIsUpdatingExam(false);
+              setEditorExam(null);
+              setSelectedExam(null);
+            }}
+            className={`px-4 py-2 rounded font-semibold ${
+              view === "exams" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-800"
+            }`}
           >
             Exams
           </button>
@@ -212,6 +374,7 @@ const fetchExams = async () => {
                 resetModal();
                 setShowModal(true);
               } else if (view === "exams") {
+                setEditorExam(null); // new exam
                 setShowExamEditor(true);
               }
             }}
@@ -221,6 +384,7 @@ const fetchExams = async () => {
           </button>
         </div>
 
+        {/* -------- TOPICS VIEW -------- */}
         {view === "topics" && (
           <>
             <h3 className="text-xl font-bold mb-4 text-center">
@@ -236,7 +400,9 @@ const fetchExams = async () => {
                   <h4
                     className="font-semibold text-lg cursor-pointer"
                     onClick={() =>
-                      navigate(`/admin/curriculum/${curriculum}/${grade}/${subject}/${topic.id}`)
+                      navigate(
+                        `/admin/curriculum/${curriculum}/${grade}/${subject}/${topic.id}`
+                      )
                     }
                   >
                     {topic.title}
@@ -251,17 +417,22 @@ const fetchExams = async () => {
                         onLoadedMetadata={(e) => {
                           const video = e.target;
                           const duration = video.duration;
-                          const formatted = `${Math.floor(duration / 60)}:${
-                            Math.floor(duration % 60).toString().padStart(2, "0")
-                          }`;
+                          const formatted = `${Math.floor(duration / 60)}:${Math.floor(
+                            duration % 60
+                          )
+                            .toString()
+                            .padStart(2, "0")}`;
                           const label = video.nextElementSibling;
-                          if (label) label.textContent = `Duration: ${formatted} min`;
+                          if (label)
+                            label.textContent = `Duration: ${formatted} min`;
                         }}
                       >
                         <source src={topic.videoUrl} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
-                      <p className="text-xs text-gray-500 mt-1">Loading duration...</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Loading duration...
+                      </p>
                     </div>
                   )}
 
@@ -287,52 +458,177 @@ const fetchExams = async () => {
           </>
         )}
 
-{view === "exams" && (
-  <div className="space-y-4">
-   {showExamEditor && (
-  <ExamEditor
-    examId={selectedExam?.id || null}
-    initialContent={selectedExam?.content || ""}
-    onClose={() => {
-      setShowExamEditor(false);
-      setSelectedExam(null);
-      fetchExams();
-    }}
-  />
-)}
+        {/* -------- EXAMS VIEW -------- */}
+        {view === "exams" && (
+          <div className="space-y-4">
+            {/* Modal-like create (unchanged) */}
+            {showExamEditor && !editorExam && (
+              <ExamEditor
+                onClose={() => {
+                  setShowExamEditor(false);
+                  fetchExams();
+                }}
+              />
+            )}
 
-    <h3 className="text-xl font-bold text-center mb-4">
-      {subject.replace(/_/g, " ").toUpperCase()} EXAMS
-    </h3>
+            {/* LIST VIEW */}
+            {!selectedExam ? (
+              <>
+                <h3 className="text-xl font-bold text-center mb-4">
+                  {subject.replace(/_/g, " ").toUpperCase()} EXAMS
+                </h3>
 
-    {exams.length === 0 ? (
-      <p className="text-gray-500 text-center">No exams available.</p>
-    ) : (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
-        {exams.map((exam) => (
-          <div
-  key={exam.id}
-  className="border p-4 rounded-lg bg-gray-50 shadow hover:shadow-md cursor-pointer"
-  onClick={() => {
-    setSelectedExam(exam);
-    setShowExamEditor(true);
-  }}
->
-  <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: exam.content }} />
-  <p className="text-xs text-gray-500 mt-2">
-    Created: {exam.createdAt?.toDate?.().toLocaleString()}
-  </p>
-</div>
+                {exams.length === 0 ? (
+                  <p className="text-gray-500 text-center">No exams available.</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
+                    {exams.map((exam) => (
+                      <div
+                        key={exam.id}
+                        className="border p-4 rounded-lg bg-gray-50 shadow hover:shadow-md"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div
+                            className="flex-1 cursor-pointer"
+                            onClick={() => openExam(exam)}
+                          >
+                            <h4 className="font-semibold text-lg">
+                              {exam.title || exam.id}
+                            </h4>
+                            <p className="text-xs text-gray-500 mt-2">
+                              Created:{" "}
+                              {exam.createdAt?.toDate?.().toLocaleString?.() || ""}
+                            </p>
+                          </div>
 
-        ))}
-      </div>
-    )}
-  </div>
-)}
+                          <div className="flex gap-2 ml-2">
+                            <button
+                              onClick={() => updateExam(exam)}
+                              className="text-blue-600 hover:text-blue-800"
+                              title="Update"
+                            >
+                              ✏️ Update
+                            </button>
+                            <button
+                              onClick={() => deleteExam(exam.id)}
+                              className="text-red-600 hover:text-red-800"
+                              title="Delete"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : isUpdatingExam && editorExam ? (
+              // INLINE EDIT MODE
+              <div>
+                <button
+                  onClick={() => {
+                    setIsUpdatingExam(false);
+                    setEditorExam(null);
+                    openExam(selectedExam);
+                  }}
+                  className="mb-4 bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded"
+                >
+                  ← Cancel Editing
+                </button>
 
+                <ExamEditor
+                  examId={editorExam.id}
+                  initialTitle={editorExam.title}
+                  initialQuestions={editorExam.questions}
+                  onClose={async () => {
+                    setIsUpdatingExam(false);
+                    setEditorExam(null);
+                    await fetchExams();
+                    await fetchExamQuestions(selectedExam.id);
+                  }}
+                />
+              </div>
+            ) : (
+              // READ ONLY VIEW
+              <div>
+                <button
+                  onClick={() => {
+                    setSelectedExam(null);
+                    setExamQuestions([]);
+                    setIsUpdatingExam(false);
+                    setEditorExam(null);
+                  }}
+                  className="mb-4 bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded"
+                >
+                  ← Back to Exams
+                </button>
 
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold">
+                    {selectedExam.title || selectedExam.id}
+                  </h3>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => updateExam(selectedExam)}
+                      className="text-blue-600 hover:text-blue-800"
+                      title="Update"
+                    >
+                      ✏️ Update
+                    </button>
+                    <button
+                      onClick={() => deleteExam(selectedExam.id)}
+                      className="text-red-600 hover:text-red-800"
+                      title="Delete"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                </div>
 
+                {loadingQuestions ? (
+                  <p className="text-gray-500">Loading questions...</p>
+                ) : examQuestions.length === 0 ? (
+                  <p className="text-gray-500">
+                    No questions found for this exam.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    {examQuestions.map((q, index) => (
+                      <div
+                        key={q.id}
+                        className="border rounded p-4 bg-white shadow-sm"
+                      >
+                        <h4 className="font-bold text-blue-600">
+                          Question {index + 1}
+                        </h4>
+                        <div
+                          className="prose max-w-none"
+                          dangerouslySetInnerHTML={{
+                            __html: q.questionHTML || "",
+                          }}
+                        />
+                        {q.answerHTML && (
+                          <div className="mt-2 p-2 bg-gray-100 rounded">
+                            <h5 className="font-semibold text-green-700">
+                              Answer:
+                            </h5>
+                            <div
+                              className="prose max-w-none"
+                              dangerouslySetInnerHTML={{ __html: q.answerHTML }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
+        {/* -------- TOPIC MODAL -------- */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded shadow-lg relative w-full max-w-md">
@@ -374,7 +670,9 @@ const fetchExams = async () => {
 
               {uploadProgress > 0 && uploadProgress < 100 && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-600">Uploading: {uploadProgress}%</p>
+                  <p className="text-sm text-gray-600">
+                    Uploading: {uploadProgress}%
+                  </p>
                   <div className="w-full bg-gray-200 h-2 rounded">
                     <div
                       className="bg-blue-600 h-2 rounded"
