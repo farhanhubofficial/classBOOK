@@ -9,13 +9,15 @@ import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
 import { useNavigate, Outlet } from "react-router-dom";
-import LoadingScreen from "./LoadingScreen"
+import LoadingScreen from "./LoadingScreen";
+import AccountSettingsModal from "./AccountSettingsModal";
 
 const StudentDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [userData, setUserData] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [loading, setLoading] = useState(true);  // Track loading state
+  const [loading, setLoading] = useState(true);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const sidebarRef = useRef(null);
   const navigate = useNavigate();
   const auth = getAuth();
@@ -31,23 +33,28 @@ const StudentDashboard = () => {
     }
   };
 
+  const refreshUser = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    const userRef = doc(db, "users", currentUser.uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      setUserData(userSnap.data());
+    }
+  };
+
   useEffect(() => {
-    // Listen to auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        const userRef = doc(db, "users", currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          setUserData(userSnap.data());
-        }
-        setLoading(false); // Set loading to false after fetching user data
+        await refreshUser();
+        setLoading(false);
       } else {
-        setLoading(false); // Set loading to false if no user is logged in
+        setLoading(false);
         navigate("/login");
       }
     });
 
-    return () => unsubscribe(); // Cleanup the listener on component unmount
+    return () => unsubscribe();
   }, [auth, navigate]);
 
   useEffect(() => {
@@ -64,14 +71,13 @@ const StudentDashboard = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <p><LoadingScreen /></p>
+        <LoadingScreen />
       </div>
     );
   }
 
   return (
     <div className="flex h-screen bg-white text-gray-900 overflow-hidden">
-      {/* Sidebar */}
       <aside
         ref={sidebarRef}
         className={`fixed top-0 left-0 z-40 w-64 h-screen bg-gray-100 p-5 flex flex-col shadow-lg transform transition-transform duration-300 overflow-y-auto scrollbar-thin ${
@@ -85,7 +91,12 @@ const StudentDashboard = () => {
           <GiSpellBook /> classBOOK
         </div>
         <div className="mt-5 text-center">
-          <FaUserCircle className="text-5xl mx-auto text-gray-500" />
+          {userData?.photoURL ? (
+            <img src={userData.photoURL} alt="Profile" className="w-20 h-20 rounded-full mx-auto object-cover cursor-pointer" onClick={() => setIsSettingsModalOpen(true)}
+/>
+          ) : (
+            <FaUserCircle className="text-5xl mx-auto text-gray-500" />
+          )}
           <h2 className="text-lg font-semibold mt-2">
             {userData ? `${userData.firstName} ${userData.lastName}` : "Loading..."}
           </h2>
@@ -94,104 +105,76 @@ const StudentDashboard = () => {
           <p className="text-sm text-gray-600 lowercase font-semibold">{userData?.classroom}</p>
         </div>
         <nav className="mt-10 space-y-3 pb-10">
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/dashboard")}>
-            <FaUserCircle /> Dashboard
-          </button>
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/settings")}>
-            <FiSettings /> Settings
-          </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/dashboard")}> <FaUserCircle /> Dashboard </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/settings")}> <FiSettings /> Settings </button>
 
-          {userData?.curriculum === "English Course" ||
-userData?.curriculum === "Kiswahili Course" ||
-userData?.curriculum === "Somali Course" ||
-userData?.curriculum === "Arabic Course"
- ? (
+          {["English Course", "Kiswahili Course", "Somali Course", "Arabic Course"].includes(userData?.curriculum) ? (
             <>
-              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lessons")}>
-                <GiSpellBook /> Lessons
-              </button>
-              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lesson-documents")}>
-                <MdDescription /> Lesson Documents
-              </button>
-              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/crash-courses")}>
-                <FaBolt /> Crash Courses
-              </button>
-              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/assignments")}>
-                <RiFileList3Line /> Assignments
-              </button>
+              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lessons")}> <GiSpellBook /> Lessons </button>
+              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lesson-documents")}> <MdDescription /> Lesson Documents </button>
+              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/crash-courses")}> <FaBolt /> Crash Courses </button>
+              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/assignments")}> <RiFileList3Line /> Assignments </button>
             </>
           ) : (
-            <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/subjects")}>
-              <MdSubject /> Subjects
-            </button>
+            <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/subjects")}> <MdSubject /> Subjects </button>
           )}
 
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
-            <MdAssessment /> Exam Reports
-          </button>
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
-            <MdAssessment /> Exams
-          </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 p-2 text-red-600 rounded-md hover:bg-red-100"
-          >
-            <MdExitToApp /> Log out
-          </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"> <MdAssessment /> Exam Reports </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"> <MdAssessment /> Exams </button>
+          <button onClick={handleLogout} className="flex items-center gap-2 p-2 text-red-600 rounded-md hover:bg-red-100"> <MdExitToApp /> Log out </button>
         </nav>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 lg:ml-64 overflow-y-auto h-screen">
-        {/* Top Bar */}
         <div className="sticky top-0 z-30 bg-gray-50 p-3 rounded-md shadow-sm flex flex-col gap-2">
           <div className="flex flex-wrap justify-between items-center gap-3 sm:gap-6">
             <div className="flex items-center gap-3 flex-shrink">
               <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
-
-              {/* Desktop search input */}
               <div className="hidden lg:flex items-center bg-white p-2 rounded-md shadow-sm w-full lg:w-2/3">
                 <FaSearch className="text-gray-500 mr-2" />
                 <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" />
               </div>
-
-              {/* Mobile search icon */}
-              <FaSearch
-                className="text-2xl text-gray-500 cursor-pointer lg:hidden"
-                onClick={() => setIsSearchOpen((prev) => !prev)}
-              />
+              <FaSearch className="text-2xl text-gray-500 cursor-pointer lg:hidden" onClick={() => setIsSearchOpen((prev) => !prev)} />
             </div>
 
             <div className="flex items-center gap-3">
-              <FaUserCircle className="text-5xl text-gray-500" />
+              {userData?.photoURL ? (
+                <img
+                  src={userData.photoURL}
+                  alt="User"
+                  className="w-12 h-12 rounded-full object-cover cursor-pointer"
+                  onClick={() => setIsSettingsModalOpen(true)}
+                />
+              ) : (
+                <FaUserCircle className="text-5xl text-gray-500 cursor-pointer" onClick={() => setIsSettingsModalOpen(true)} />
+              )}
               <div>
-                <p className="text-sm text-gray-700">
-                  {userData?.firstName || "Loading..."} {userData?.lastName || ""}
-                </p>
+                <p className="text-sm text-gray-700">{userData?.firstName || "Loading..."} {userData?.lastName || ""}</p>
                 <p className="text-xs text-gray-500">{userData?.grade}</p>
               </div>
             </div>
           </div>
 
-          {/* Mobile search input (shown conditionally) */}
           {isSearchOpen && (
             <div className="lg:hidden flex items-center bg-white p-2 rounded-md shadow-sm w-full">
               <FaSearch className="text-gray-500 mr-2" />
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-full outline-none bg-transparent"
-                autoFocus
-              />
+              <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" autoFocus />
             </div>
           )}
         </div>
 
-        {/* Page Content */}
-<div className="mt-5 p-5 rounded-lg shadow-md w-full max-w-full">
+        <div className="mt-5 p-5 rounded-lg shadow-md w-full max-w-full">
           <Outlet />
         </div>
       </main>
+
+      {isSettingsModalOpen && (
+        <AccountSettingsModal
+          onClose={() => setIsSettingsModalOpen(false)}
+          userData={userData}
+          refreshUser={refreshUser} // ✅ Fix: Now passed correctly
+        />
+      )}
     </div>
   );
 };

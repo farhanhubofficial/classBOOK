@@ -20,12 +20,14 @@ import {
 import { IoMdMenu } from "react-icons/io";
 import { MdClose, MdExpandMore, MdExpandLess } from "react-icons/md";
 import { GiSpellBook } from "react-icons/gi";
+import AccountSettingsModal from "./AccountSettingsModal";
 
 const AdminDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [curriculumDropdownOpen, setCurriculumDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   const sidebarRef = useRef(null);
   const auth = getAuth();
@@ -48,6 +50,15 @@ const AdminDashboard = () => {
     });
     return () => unsubscribe();
   }, [auth]);
+
+  const refreshUser = async () => {
+    if (!user) return;
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      setUserData(userSnap.data());
+    }
+  };
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   const toggleCurriculumDropdown = () => setCurriculumDropdownOpen((prev) => !prev);
@@ -174,20 +185,28 @@ const AdminDashboard = () => {
             <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
             <h1 className="text-xl font-semibold text-gray-700">Admin Dashboard</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setShowAccountModal(true)}>
             <FaRegUser className="text-3xl text-gray-500" />
             <div>
-              <p className="text-sm">{user?.displayName || "Admin User"}</p>
+              <p className="text-sm">{userData?.firstName || "Admin User"}</p>
               <p className="text-xs text-gray-500">Admin</p>
             </div>
           </div>
         </header>
 
         {/* Page Outlet */}
-<div className="mt-5 p-5 rounded-lg shadow-md w-full max-w-full">
+        <div className="mt-5 p-5 rounded-lg shadow-md w-full max-w-full">
           <Outlet />
         </div>
       </main>
+
+      {showAccountModal && (
+        <AccountSettingsModal
+          onClose={() => setShowAccountModal(false)}
+          userData={userData}
+          refreshUser={refreshUser}
+        />
+      )}
     </div>
   );
 };
