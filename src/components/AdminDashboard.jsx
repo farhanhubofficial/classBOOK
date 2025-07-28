@@ -27,22 +27,28 @@ const AdminDashboard = () => {
   const [curriculumDropdownOpen, setCurriculumDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const sidebarRef = useRef(null);
   const auth = getAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const refreshUser = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    const userRef = doc(db, "users", currentUser.uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      setUserData(userSnap.data());
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        const userRef = doc(db, "users", currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          setUserData(userSnap.data());
-        }
+        await refreshUser();
       } else {
         setUser(null);
         setUserData(null);
@@ -50,15 +56,6 @@ const AdminDashboard = () => {
     });
     return () => unsubscribe();
   }, [auth]);
-
-  const refreshUser = async () => {
-    if (!user) return;
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      setUserData(userSnap.data());
-    }
-  };
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   const toggleCurriculumDropdown = () => setCurriculumDropdownOpen((prev) => !prev);
@@ -100,7 +97,19 @@ const AdminDashboard = () => {
           <GiSpellBook /> classBOOK
         </div>
         <div className="text-center mb-6">
-          <FaUserCircle className="text-5xl mx-auto text-gray-500" />
+          {userData?.photoURL ? (
+            <img
+              src={userData.photoURL}
+              alt="User"
+              className="w-20 h-20 rounded-full mx-auto object-cover cursor-pointer"
+              onClick={() => setIsSettingsModalOpen(true)}
+            />
+          ) : (
+            <FaUserCircle
+              className="text-5xl mx-auto text-gray-500 cursor-pointer"
+              onClick={() => setIsSettingsModalOpen(true)}
+            />
+          )}
           <h2 className="text-lg font-semibold mt-2">
             {userData ? `${userData.firstName} ${userData.lastName}` : "Loading..."}
           </h2>
@@ -146,7 +155,6 @@ const AdminDashboard = () => {
             )}
           </div>
 
-
           <button onClick={() => navigate("/admin/students")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaUserGraduate /> Students
           </button>
@@ -185,10 +193,22 @@ const AdminDashboard = () => {
             <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
             <h1 className="text-xl font-semibold text-gray-700">Admin Dashboard</h1>
           </div>
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setShowAccountModal(true)}>
-            <FaRegUser className="text-3xl text-gray-500" />
+          <div className="flex items-center gap-3">
+            {userData?.photoURL ? (
+              <img
+                src={userData.photoURL}
+                alt="User"
+                className="w-12 h-12 rounded-full object-cover cursor-pointer"
+                onClick={() => setIsSettingsModalOpen(true)}
+              />
+            ) : (
+              <FaUserCircle
+                className="text-5xl text-gray-500 cursor-pointer"
+                onClick={() => setIsSettingsModalOpen(true)}
+              />
+            )}
             <div>
-              <p className="text-sm">{userData?.firstName || "Admin User"}</p>
+              <p className="text-sm">{userData?.firstName || "Admin User"} {userData?.lastName || ""}</p>
               <p className="text-xs text-gray-500">Admin</p>
             </div>
           </div>
@@ -200,9 +220,9 @@ const AdminDashboard = () => {
         </div>
       </main>
 
-      {showAccountModal && (
+      {isSettingsModalOpen && (
         <AccountSettingsModal
-          onClose={() => setShowAccountModal(false)}
+          onClose={() => setIsSettingsModalOpen(false)}
           userData={userData}
           refreshUser={refreshUser}
         />
