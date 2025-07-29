@@ -4,6 +4,8 @@ import { FaCamera, FaUser, FaLock, FaCog, FaDatabase, FaEye, FaEyeSlash } from "
 import { getAuth, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 // Avatar fallback
 const CombinedAvatar = ({ name, photoURL, size = 96 }) => {
@@ -88,15 +90,22 @@ const AccountSettingsModal = ({ onClose, userData, refreshUser }) => {
     }
   };
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoURL(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
+const handlePhotoChange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, `user_avatars/${currentUser.uid}/${file.name}`);
+    await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(storageRef);
+    setPhotoURL(downloadURL);
+  } catch (error) {
+    console.error("Failed to upload image:", error);
+    alert("Failed to upload image. Please try again.");
+  }
+};
+
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
