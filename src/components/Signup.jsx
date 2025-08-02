@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase-config";
 
@@ -82,30 +82,31 @@ function Signup() {
       });
 
       const userDocRef = doc(db, "users", user.uid);
+      const role = formData.category;
+await setDoc(userDocRef, {
+  email: formData.email,
+  firstName: formData.firstName,
+  lastName: formData.lastName,
+  role,
+  category: formData.category,
+  curriculum:
+    formData.curriculum === "english"
+      ? "English Course"
+      : formData.curriculum === "somali"
+      ? "Somali Course"
+      : formData.curriculum === "arabic"
+      ? "Arabic Course"
+      : formData.curriculum === "kiswahili"
+      ? "Kiswahili Course"
+      : formData.curriculum || null,
+  grade: formData.grade || null,
+  daysPresent: 0,
+  daysAbsent: 0,
+  courseDuration: 0,
+  dateRegistered: new Date(), // ✅ alternate working timestamp
+});
 
-      let role = formData.category;
 
-      await setDoc(userDocRef, {
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        role,
-        category: formData.category,
-        curriculum:
-          formData.curriculum === "english"
-            ? "English Course"
-            : formData.curriculum === "somali"
-            ? "Somali Course"
-            : formData.curriculum === "arabic"
-            ? "Arabic Course"
-            : formData.curriculum === "kiswahili"
-            ? "Kiswahili Course"
-            : formData.curriculum || null,
-        grade: formData.grade || null,
-        daysPresent: 0,
-        daysAbsent: 0,
-        courseDuration: 0,
-      });
 
       if (role === "admin") {
         navigate("/admin");

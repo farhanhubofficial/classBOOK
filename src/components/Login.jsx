@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { auth, db } from "../firebase-config";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
@@ -24,6 +24,11 @@ function Login() {
       if (userDoc.exists()) {
         const userData = userDoc.data();
 
+        // ✅ Save login time
+        await updateDoc(userDocRef, {
+          lastLogin: new Date()
+        });
+
         // Navigate based on role
         if (userData.role === "learner") {
           navigate("/students/dashboard");
@@ -32,7 +37,7 @@ function Login() {
         } else if (userData.role === "operator") {
           navigate("/users");
         } else {
-          navigate("/"); // fallback route
+          navigate("/");
         }
       } else {
         setError("User data not found in Firestore.");

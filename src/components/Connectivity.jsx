@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import IgcseHome from './IgcseHome';
 import CurriculumHome from './CurriculumHome';
-
+import SettingsPanel from './SettingPanel';
 import CbcHome from './CbcHome';
 
 import GradeView from './GradeView';
@@ -91,6 +91,7 @@ useEffect(() => {
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminDashboard />}>
           <Route path="dashboard" element={<DashboardHome />} />
+          <Route path="settingspanel" element={<SettingsPanel />} />
 
 
           

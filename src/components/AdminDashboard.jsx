@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
+import UsersPanel from "./UsersPanel";
 
 import {
   FaTachometerAlt,
@@ -28,6 +29,7 @@ const AdminDashboard = () => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [showUsersPanel, setShowUsersPanel] = useState(false);
 
   const sidebarRef = useRef(null);
   const auth = getAuth();
@@ -80,7 +82,7 @@ const AdminDashboard = () => {
   }, [isSidebarOpen]);
 
   return (
-    <div className="flex h-screen bg-white text-gray-900">
+    <div className="flex h-screen bg-white text-gray-900 relative">
       {/* Sidebar */}
       <aside
         ref={sidebarRef}
@@ -159,8 +161,8 @@ const AdminDashboard = () => {
             <FaUserGraduate /> Students
           </button>
 
-          <button onClick={() => navigate("/admin/parents")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
-            <FaUsers /> Parents
+          <button onClick={() => setShowUsersPanel(true)} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
+            <FaUsers /> Users
           </button>
 
           <button onClick={() => navigate("/admin/staffs")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
@@ -218,6 +220,15 @@ const AdminDashboard = () => {
         <div className="mt-5 p-5 rounded-lg shadow-md w-full max-w-full">
           <Outlet />
         </div>
+
+        {/* Users Panel Modal */}
+        {showUsersPanel && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded shadow-lg max-h-[90vh] overflow-y-auto w-full max-w-4xl">
+              <UsersPanel onClose={() => setShowUsersPanel(false)} />
+            </div>
+          </div>
+        )}
       </main>
 
       {isSettingsModalOpen && (
