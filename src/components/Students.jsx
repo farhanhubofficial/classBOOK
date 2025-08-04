@@ -44,6 +44,8 @@ function Students() {
     fetchStudents();
   }, []);
 
+  
+
   const randomFeesPaid = () => (Math.floor(Math.random() * 5000) + 1000) + " KES";
 
   const handleSearch = (e) => {

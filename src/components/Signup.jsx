@@ -103,8 +103,10 @@ await setDoc(userDocRef, {
   daysPresent: 0,
   daysAbsent: 0,
   courseDuration: 0,
-  dateRegistered: new Date(), // ✅ alternate working timestamp
+  dateRegistered: new Date(),
+  lastLogin: new Date(), // ✅ Add this line
 });
+
 
 
 
@@ -112,7 +114,10 @@ await setDoc(userDocRef, {
         navigate("/admin");
       } else if (formData.category === "learner") {
         navigate("/students/dashboard");
-      } else {
+      } else if (formData.category === "teacher") {
+  navigate("/teacherdashboard");
+      
+      }else {
         navigate("/");
       }
     } catch (error) {

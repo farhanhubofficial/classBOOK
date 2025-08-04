@@ -4,6 +4,7 @@ import IgcseHome from './IgcseHome';
 import CurriculumHome from './CurriculumHome';
 import SettingsPanel from './SettingPanel';
 import CbcHome from './CbcHome';
+import TeacherDashboard from './TeacherDashboard'; // adjust path if needed
 
 import GradeView from './GradeView';
 import SubjectView from './SubjectView';
@@ -85,6 +86,7 @@ useEffect(() => {
       {showHeader && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
+<Route path="/teacherdashboard" element={<TeacherDashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
 

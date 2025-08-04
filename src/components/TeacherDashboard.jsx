@@ -3,19 +3,14 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
-import UsersPanel from "./UsersPanel";
 
 import {
   FaTachometerAlt,
-  FaUsers,
-  FaChalkboardTeacher,
   FaRegUser,
   FaSignOutAlt,
   FaBook,
   FaCog,
-  FaWallet,
   FaUserGraduate,
-  FaUserTie,
   FaUserCircle,
 } from "react-icons/fa";
 import { IoMdMenu } from "react-icons/io";
@@ -23,20 +18,17 @@ import { MdClose, MdExpandMore, MdExpandLess } from "react-icons/md";
 import { GiSpellBook } from "react-icons/gi";
 import AccountSettingsModal from "./AccountSettingsModal";
 
-const AdminDashboard = () => {
+const TeacherDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [curriculumDropdownOpen, setCurriculumDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [showUsersPanel, setShowUsersPanel] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
-
 
   const sidebarRef = useRef(null);
   const auth = getAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const refreshUser = async () => {
     const currentUser = auth.currentUser;
@@ -85,7 +77,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex h-screen bg-white text-gray-900 relative">
-      {/* Sidebar */}
       <aside
         ref={sidebarRef}
         className={`fixed top-0 left-0 z-40 w-64 h-screen bg-gray-100 p-5 shadow-lg transform transition-transform duration-300 overflow-y-auto max-h-screen ${
@@ -96,10 +87,10 @@ const AdminDashboard = () => {
           <MdClose className="text-3xl text-green-600 cursor-pointer" onClick={toggleSidebar} />
         </div>
 
-        {/* Sidebar Header */}
         <div className="flex items-center gap-2 text-green-600 text-2xl font-bold mb-4">
           <GiSpellBook /> classBOOK
         </div>
+
         <div className="text-center mb-6">
           {userData?.photoURL ? (
             <img
@@ -120,23 +111,15 @@ const AdminDashboard = () => {
           <h2 className=" font-semibold mt-2">
             {userData ? `${userData.role}` : "Loading..."}
           </h2>
-          <p className="text-sm text-gray-600">{userData ? userData.category : "Loading..."}</p>
-          <p className="text-sm text-gray-600">
-            {userData ? (
-              <span className="uppercase font-bold">{userData.curriculum}</span>
-            ) : (
-              "Loading..."
-            )}
-          </p>
+          <p className="text-sm text-gray-600">{userData?.category || "Loading..."}</p>
+          <p className="text-sm text-gray-600 uppercase font-bold">{userData?.curriculum || "Loading..."}</p>
         </div>
 
-        {/* Sidebar Navigation */}
         <nav className="space-y-3">
-          <button onClick={() => navigate("/admin/dashboard")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
+          <button onClick={() => navigate("/teacher/dashboard")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaTachometerAlt /> Dashboard
           </button>
 
-          {/* Curriculum Dropdown */}
           <div>
             <button
               onClick={toggleCurriculumDropdown}
@@ -149,57 +132,42 @@ const AdminDashboard = () => {
             </button>
             {curriculumDropdownOpen && (
               <div className="pl-6 space-y-2 mt-2">
-                <button onClick={() => navigate("/admin/curriculum/cbc")} className="block hover:text-green-600">CBC</button>
-                <button onClick={() => navigate("/admin/curriculum/igcse")} className="block hover:text-green-600">IGCSE</button>
-                <button onClick={() => navigate("/admin/curriculum/english-course")} className="block hover:text-green-600">English Course</button>
-                <button onClick={() => navigate("/admin/curriculum/arabic-course")} className="block hover:text-green-600">Arabic Course</button>
-                <button onClick={() => navigate("/admin/curriculum/kiswahili-course")} className="block hover:text-green-600">Kiswahili Course</button>
-                <button onClick={() => navigate("/admin/curriculum/somali-course")} className="block hover:text-green-600">Somali Course</button>
+                <button onClick={() => navigate("/teacher/curriculum/cbc")} className="block hover:text-green-600">CBC</button>
+                <button onClick={() => navigate("/teacher/curriculum/igcse")} className="block hover:text-green-600">IGCSE</button>
+                <button onClick={() => navigate("/teacher/curriculum/english-course")} className="block hover:text-green-600">English Course</button>
+                <button onClick={() => navigate("/teacher/curriculum/arabic-course")} className="block hover:text-green-600">Arabic Course</button>
+                <button onClick={() => navigate("/teacher/curriculum/kiswahili-course")} className="block hover:text-green-600">Kiswahili Course</button>
+                <button onClick={() => navigate("/teacher/curriculum/somali-course")} className="block hover:text-green-600">Somali Course</button>
               </div>
             )}
           </div>
 
-          <button onClick={() => navigate("/admin/students")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
+          <button onClick={() => navigate("/teacher/students")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaUserGraduate /> Students
           </button>
 
-          <button onClick={() => setShowUsersPanel(true)} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
-            <FaUsers /> Users
-          </button>
-
-          <button onClick={() => navigate("/admin/staffs")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
-            <FaUserTie /> Staffs
-          </button>
-
-          <button onClick={() => navigate("/admin/payments")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
-            <FaWallet /> Payment Status
-          </button>
-
-          <button onClick={() => navigate("/admin/account")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
+          <button onClick={() => navigate("/teacher/account")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaRegUser /> Account
           </button>
 
-          <button onClick={() => navigate("/admin/settings")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
+          <button onClick={() => navigate("/teacher/settings")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaCog /> Settings
           </button>
 
-       <button
-  onClick={() => setShowConfirmLogout(true)}
-  className="flex items-center gap-2 p-2 text-red-600 hover:bg-red-100 rounded"
->
-  <FaSignOutAlt /> Log Out
-</button>
-
+          <button
+            onClick={() => setShowConfirmLogout(true)}
+            className="flex items-center gap-2 p-2 text-red-600 hover:bg-red-100 rounded"
+          >
+            <FaSignOutAlt /> Log Out
+          </button>
         </nav>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 lg:ml-64 bg-gray-50 min-h-screen">
-        {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-white p-3 rounded shadow-sm flex justify-between items-center">
           <div className="flex items-center gap-3">
             <IoMdMenu className="text-2xl text-green-600 cursor-pointer lg:hidden" onClick={toggleSidebar} />
-            <h1 className="text-xl font-semibold text-gray-700">Admin Dashboard</h1>
+            <h1 className="text-xl font-semibold text-gray-700">Teacher Dashboard</h1>
           </div>
           <div className="flex items-center gap-3">
             {userData?.photoURL ? (
@@ -216,25 +184,15 @@ const AdminDashboard = () => {
               />
             )}
             <div>
-              <p className="text-sm">{userData?.firstName || "Admin User"} {userData?.lastName || ""}</p>
-              <p className="text-xs text-gray-500">Admin</p>
+              <p className="text-sm">{userData?.firstName || "Teacher"} {userData?.lastName || ""}</p>
+              <p className="text-xs text-gray-500">Teacher</p>
             </div>
           </div>
         </header>
 
-        {/* Page Outlet */}
         <div className="mt-5 p-5 rounded-lg shadow-md w-full max-w-full">
           <Outlet />
         </div>
-
-        {/* Users Panel Modal */}
-        {showUsersPanel && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded shadow-lg max-h-[90vh] overflow-y-auto w-full max-w-4xl">
-              <UsersPanel onClose={() => setShowUsersPanel(false)} />
-            </div>
-          </div>
-        )}
       </main>
 
       {isSettingsModalOpen && (
@@ -244,31 +202,31 @@ const AdminDashboard = () => {
           refreshUser={refreshUser}
         />
       )}
-      {showConfirmLogout && (
-  <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-    <div className="bg-white p-6 rounded shadow-lg w-96 text-center animate-fade-in">
-      <h2 className="text-lg font-semibold mb-4 text-red-600">Confirm Logout</h2>
-      <p className="mb-4">Are you sure you want to log out?</p>
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-transform transform hover:scale-105"
-        >
-          Yes, Log Out
-        </button>
-        <button
-          onClick={() => setShowConfirmLogout(false)}
-          className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition-transform transform hover:scale-105"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
 
+      {showConfirmLogout && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-lg w-96 text-center animate-fade-in">
+            <h2 className="text-lg font-semibold mb-4 text-red-600">Confirm Logout</h2>
+            <p className="mb-4">Are you sure you want to log out?</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-transform transform hover:scale-105"
+              >
+                Yes, Log Out
+              </button>
+              <button
+                onClick={() => setShowConfirmLogout(false)}
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition-transform transform hover:scale-105"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default AdminDashboard;
+export default TeacherDashboard;
