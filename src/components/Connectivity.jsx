@@ -5,6 +5,7 @@ import CurriculumHome from './CurriculumHome';
 import SettingsPanel from './SettingPanel';
 import CbcHome from './CbcHome';
 import TeacherDashboard from './TeacherDashboard'; // adjust path if needed
+import AccountManagement from './AccountManagement';
 
 import GradeView from './GradeView';
 import SubjectView from './SubjectView';
@@ -53,6 +54,8 @@ import UploadAssignment from './UploadAssignment';
 
 import { useAuth } from './AuthContext';
 import LoadingScreen from './LoadingScreen'; // ✅ custom loading component
+import UsersPanel from './UsersPanel';
+import StaffManagement from './StaffManagement'; 
 
 function Connectivity() {
   const location = useLocation();
@@ -94,6 +97,11 @@ useEffect(() => {
         <Route path="/admin" element={<AdminDashboard />}>
           <Route path="dashboard" element={<DashboardHome />} />
           <Route path="settingspanel" element={<SettingsPanel />} />
+                    <Route path="accountmanagement" element={<AccountManagement />} />
+                                        <Route path="users" element={<UsersPanel />} />
+                       <Route path="staffs" element={<StaffManagement />} />
+
+
 
 
           
