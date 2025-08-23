@@ -12,11 +12,13 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { FaChartBar, FaUsers } from "react-icons/fa"; // ✅ react-icons for buttons
+import { FaChartBar, FaUsers } from "react-icons/fa";
 
 function TrDashboard() {
   const [userData, setUserData] = useState(null);
   const [selectedChart, setSelectedChart] = useState("activity");
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const auth = getAuth();
 
   useEffect(() => {
@@ -32,7 +34,7 @@ function TrDashboard() {
     fetchUser();
   }, [auth]);
 
-  // ✅ Format Dates
+  // ✅ Dates
   const today = new Date();
   const formattedToday = today.toLocaleDateString("en-US", {
     weekday: "long",
@@ -49,7 +51,7 @@ function TrDashboard() {
       })
     : "Loading...";
 
-  // ✅ Mock Graph Data
+  // ✅ Mock Chart Data
   const studentData = [
     { curriculum: "CBC", students: 45 },
     { curriculum: "IGCSE", students: 30 },
@@ -65,6 +67,17 @@ function TrDashboard() {
     { name: "Apr", performance: 90 },
   ];
 
+  // ✅ Modal Handlers
+  const openModal = (course) => {
+    setSelectedCourse(course);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedCourse(null);
+    setIsModalOpen(false);
+  };
+
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       {/* Header */}
@@ -74,7 +87,7 @@ function TrDashboard() {
         </h1>
       </div>
 
-      {/* Dates Row */}
+      {/* Dates */}
       <div className="flex justify-between items-center bg-white shadow p-4 rounded-lg">
         <p className="text-gray-700 font-medium">{formattedToday}</p>
         <p className="text-gray-500 text-sm">
@@ -82,7 +95,7 @@ function TrDashboard() {
         </p>
       </div>
 
-      {/* Buttons to Switch Charts */}
+      {/* Switch Chart Buttons */}
       <div className="flex gap-4">
         <button
           onClick={() => setSelectedChart("activity")}
@@ -133,6 +146,7 @@ function TrDashboard() {
 
       {/* Extra Dashboard Content */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Attendance */}
         <div className="bg-white shadow-md rounded-lg p-4">
           <h2 className="text-lg font-semibold text-green-700">Attendance</h2>
           <p className="text-gray-600 mt-2">
@@ -143,18 +157,69 @@ function TrDashboard() {
           </p>
         </div>
 
+        {/* Courses */}
         <div className="bg-white shadow-md rounded-lg p-4">
-          <h2 className="text-lg font-semibold text-green-700">Courses</h2>
-          <p className="text-gray-600 mt-2">
-            {userData?.curriculum?.join(", ") || "Loading..."}
-          </p>
+          <h2 className="text-lg font-semibold text-green-700 mb-3">Courses</h2>
+          <div className="flex flex-wrap gap-2">
+            {userData?.curriculum?.length > 0 ? (
+              userData.curriculum.map((course, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => openModal(course)}
+                  className="px-3 py-2 bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition"
+                >
+                  {course}
+                </button>
+              ))
+            ) : (
+              <p className="text-gray-600">Loading...</p>
+            )}
+          </div>
         </div>
 
+        {/* Role */}
         <div className="bg-white shadow-md rounded-lg p-4">
           <h2 className="text-lg font-semibold text-green-700">Role</h2>
           <p className="text-gray-600 mt-2">{userData?.role || "Teacher"}</p>
         </div>
       </div>
+
+      {/* ✅ Modal (Shows Grades + Subjects from Firestore) */}
+      {isModalOpen && selectedCourse && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-green-700 mb-4">
+              {selectedCourse} - Registered Grades
+            </h3>
+
+            {userData?.grade?.[selectedCourse]?.length > 0 ? (
+              userData.grade[selectedCourse].map((grade, idx) => (
+                <div key={idx} className="mb-4">
+                  <h4 className="font-semibold text-gray-700">{grade}</h4>
+                  <ul className="list-disc ml-6 text-gray-600">
+                    {userData?.subjects?.[selectedCourse]?.[grade]?.length > 0 ? (
+                      userData.subjects[selectedCourse][grade].map((subj) => (
+                        <li key={subj.id}>{subj.name}</li>
+                      ))
+                    ) : (
+                      <li>No subjects</li>
+                    )}
+                  </ul>
+                </div>
+              ))
+            ) : (
+              <p>No grades registered for this course</p>
+            )}
+
+            <button
+              onClick={closeModal}
+              className="mt-6 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

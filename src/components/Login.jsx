@@ -35,7 +35,7 @@ function Login() {
         } else if (userData.role === "admin") {
           navigate("/admin/dashboard");
         } else if (userData.role === "teacher") {
-             navigate("/teacher");
+             navigate("/teacher/dashboard");
         } else {
           navigate("/");
         }
@@ -62,7 +62,7 @@ function Login() {
           } else if (userData.role === "admin") {
             navigate("/admin");
           } else if (userData.role === "teacher") {
-       navigate("/teacher");          } else {
+       navigate("/teacher/dashboard");          } else {
             navigate("/");
           }
         }

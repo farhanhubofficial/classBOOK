@@ -19,7 +19,7 @@ function Signup() {
     gradesByCurriculumSubjects: {},
   });
   const [error, setError] = useState("");
-  const [subjects, setSubjects] = useState({}); // ✅ store fetched subjects per curriculum/grade
+  const [subjects, setSubjects] = useState({});
   const navigate = useNavigate();
 
   const CBCGrades = [
@@ -119,6 +119,25 @@ function Signup() {
       return setError("Passwords do not match");
     }
 
+    // ✅ validation: teachers must have at least one subject per grade
+  if (formData.category === "teacher") {
+  for (const curr of formData.selectedCurricula) {
+    // ✅ Only enforce subjects for CBC and IGCSE
+    if (curr === "cbc" || curr === "igcse") {
+      for (const grade of formData.gradesByCurriculum[curr] || []) {
+        const subjectsInGrade =
+          formData.gradesByCurriculumSubjects?.[curr]?.[grade] || [];
+        if (subjectsInGrade.length === 0) {
+          return setError(
+            `Please select at least one subject for ${grade} in ${curr.toUpperCase()}`
+          );
+        }
+      }
+    }
+  }
+}
+
+
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -162,7 +181,7 @@ function Signup() {
       } else if (formData.category === "learner") {
         navigate("/students/dashboard");
       } else if (formData.category === "teacher") {
-        navigate("/teacherdashboard");
+        navigate("/teacher/dashboard");
       } else {
         navigate("/");
       }
@@ -190,7 +209,6 @@ function Signup() {
     }
   };
 
-  // ✅ Fetch subjects from Firestore dynamically
   useEffect(() => {
     const fetchSubjects = async () => {
       let allSubjects = {};
@@ -202,10 +220,10 @@ function Signup() {
           try {
             const path = `${curr}/${grade}/subjects`;
             const snap = await getDocs(collection(db, path));
-allSubjects[curr][grade] = snap.docs.map((d) => ({
-  id: d.id,
-  name: d.data().name,
-}));
+            allSubjects[curr][grade] = snap.docs.map((d) => ({
+              id: d.id,
+              name: d.data().name,
+            }));
           } catch (err) {
             console.error("Error fetching subjects for", curr, grade, err);
             allSubjects[curr][grade] = [];
@@ -388,45 +406,51 @@ allSubjects[curr][grade] = snap.docs.map((d) => ({
                           Select Subjects for {grade}
                         </label>
                         <div className="space-y-1">
-                         {(subjects[curr]?.[grade] || []).map((subj) => (
-  <label
-    key={subj.id}
-    className="flex items-center space-x-2 text-sm"
-  >
-    <input
-      type="checkbox"
-      value={subj.id}
-      checked={
-        formData.gradesByCurriculumSubjects?.[curr]?.[grade]?.includes(subj.id) ||
-        false
-      }
-      onChange={(e) => {
-        setFormData((prev) => {
-          const prevSubs =
-            prev.gradesByCurriculumSubjects?.[curr]?.[grade] || [];
-          let updatedSubs = [...prevSubs];
-          if (e.target.checked) {
-  updatedSubs.push({ id: subj.id, name: subj.name });
-          } else {
-            updatedSubs = updatedSubs.filter((s) => s !== subj.id);
-          }
-          return {
-            ...prev,
-            gradesByCurriculumSubjects: {
-              ...prev.gradesByCurriculumSubjects,
-              [curr]: {
-                ...(prev.gradesByCurriculumSubjects?.[curr] || {}),
-                [grade]: updatedSubs,
-              },
-            },
-          };
-        });
-      }}
-    />
-    <span>{subj.name}</span>  
-  </label>
-))}
+                          {(subjects[curr]?.[grade] || []).map((subj) => (
+                            <label
+                              key={subj.id}
+                              className="flex items-center space-x-2 text-sm"
+                            >
+                              <input
+                                type="checkbox"
+                                value={subj.id}
+                                checked={
+                                  (formData.gradesByCurriculumSubjects?.[curr]?.[grade] || [])
+                                    .some((s) => s.id === subj.id)
+                                }
+                                onChange={(e) => {
+                                  setFormData((prev) => {
+                                    const prevSubs =
+                                      prev.gradesByCurriculumSubjects?.[curr]?.[grade] || [];
+                                    let updatedSubs;
 
+                                    if (e.target.checked) {
+                                      updatedSubs = [
+                                        ...prevSubs,
+                                        { id: subj.id, name: subj.name },
+                                      ];
+                                    } else {
+                                      updatedSubs = prevSubs.filter(
+                                        (s) => s.id !== subj.id
+                                      );
+                                    }
+
+                                    return {
+                                      ...prev,
+                                      gradesByCurriculumSubjects: {
+                                        ...prev.gradesByCurriculumSubjects,
+                                        [curr]: {
+                                          ...(prev.gradesByCurriculumSubjects?.[curr] || {}),
+                                          [grade]: updatedSubs,
+                                        },
+                                      },
+                                    };
+                                  });
+                                }}
+                              />
+                              <span>{subj.name}</span>
+                            </label>
+                          ))}
                         </div>
                       </div>
                     ))}

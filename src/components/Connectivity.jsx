@@ -57,6 +57,8 @@ import LoadingScreen from './LoadingScreen'; // ✅ custom loading component
 import UsersPanel from './UsersPanel';
 import StaffManagement from './StaffManagement'; 
 
+import TeacherCbc from './TeacherCbc';
+
 
 import TrDashboard from './TrDashboard';
 
@@ -144,7 +146,7 @@ useEffect(() => {
 
  <Route path='/teacher' element = {<TeacherDashboard/>}> 
   <Route path='dashboard' element = {<TrDashboard/>}/>
-  
+  <Route path='curriculum/cbc' element = {<TeacherCbc/>}/>
  </Route>
 
 
