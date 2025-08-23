@@ -34,8 +34,8 @@ function Login() {
           navigate("/students/dashboard");
         } else if (userData.role === "admin") {
           navigate("/admin/dashboard");
-        } else if (userData.role === "operator") {
-          navigate("/users");
+        } else if (userData.role === "teacher") {
+             navigate("/teacher");
         } else {
           navigate("/");
         }
@@ -61,9 +61,8 @@ function Login() {
             navigate("/students/dashboard");
           } else if (userData.role === "admin") {
             navigate("/admin");
-          } else if (userData.role === "operator") {
-            navigate("/users");
-          } else {
+          } else if (userData.role === "teacher") {
+       navigate("/teacher");          } else {
             navigate("/");
           }
         }

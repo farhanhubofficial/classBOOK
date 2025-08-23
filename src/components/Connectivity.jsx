@@ -57,14 +57,21 @@ import LoadingScreen from './LoadingScreen'; // ✅ custom loading component
 import UsersPanel from './UsersPanel';
 import StaffManagement from './StaffManagement'; 
 
+
+import TrDashboard from './TrDashboard';
+
 function Connectivity() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, userData, loading } = useAuth();
 
-  const isAdminRoute = location.pathname.startsWith('/admin');
-  const isStudentRoute = location.pathname.startsWith('/students');
-  const showHeader = !isAdminRoute && !isStudentRoute && location.pathname !== '/learners-dashboard';
+const isAdminRoute = location.pathname.startsWith('/admin');
+const isStudentRoute = location.pathname.startsWith('/students');
+const isTeacherRoute = location.pathname.startsWith('/teacher');
+
+// Hide header for any teacher routes
+const showHeader = !isAdminRoute && !isStudentRoute && !isTeacherRoute;
+
 
 useEffect(() => {
   if (!loading && user && userData) {
@@ -89,7 +96,7 @@ useEffect(() => {
       {showHeader && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
-<Route path="/teacherdashboard" element={<TeacherDashboard />} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
 
@@ -101,9 +108,6 @@ useEffect(() => {
                                         <Route path="users" element={<UsersPanel />} />
                        <Route path="staffs" element={<StaffManagement />} />
 
-
-
-
           
 <Route path="curriculum/:curriculum">
   <Route index element={<CurriculumHome />} />
@@ -111,12 +115,6 @@ useEffect(() => {
   <Route path=":grade/:subject" element={<SubjectView />} />
   <Route path=":grade/:subject/:topicId" element={<TopicView />} />
 </Route>
-
-
-
-
-
-
 
 
           <Route path="curriculum/english-course" element={<EnglishClass />} />
@@ -140,7 +138,19 @@ useEffect(() => {
 
 
 
+
+{/* teachers route  */}
         </Route>
+
+ <Route path='/teacher' element = {<TeacherDashboard/>}> 
+  <Route path='dashboard' element = {<TrDashboard/>}/>
+  
+ </Route>
+
+
+
+
+
 
         {/* Student Routes */}
         <Route path="/students" element={<StudentDashboard />}>
