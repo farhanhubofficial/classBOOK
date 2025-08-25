@@ -51,7 +51,7 @@ import Beginner from './Beginner';
 import StudentAssignments from './StudentAssignments';
 import ViewSubmittedAssignment from './ViewSubmittedAssignment';
 import UploadAssignment from './UploadAssignment';
-
+import UploadLesson from './UploadLesson';
 import { useAuth } from './AuthContext';
 import LoadingScreen from './LoadingScreen'; // ✅ custom loading component
 import UsersPanel from './UsersPanel';
@@ -137,6 +137,8 @@ useEffect(() => {
           <Route path="payments" element={<PaymentStatus />} />
   <Route path="view-assignments/:classroomName" element={<ViewSubmittedAssignment />} />
     <Route path="upload-assignments/:classroomName" element={<UploadAssignment />} />
+    <Route path="upload-lesson/:classroomName" element={<UploadLesson />} />
+
 
 
 
