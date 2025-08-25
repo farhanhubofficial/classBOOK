@@ -55,7 +55,7 @@ function Elementary() {
     const levelStudents = [];
     snap.forEach((doc) => {
       const data = doc.data();
-      if (data.grade === level && data.curriculum === "English Course") {
+      if (data.grade === level && data.curriculum === "english") {
         levelStudents.push({ id: doc.id, ...data });
       }
     });

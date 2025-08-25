@@ -143,7 +143,7 @@ function LearnerDashboard() {
   };
 
   const allowedCurricula = [
-    "English Course",
+    "english",
     "Somali Course",
     "Arabic Course",
     "Kiswahili Course",
