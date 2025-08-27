@@ -55,7 +55,7 @@ function Elementary() {
     const levelStudents = [];
     snap.forEach((doc) => {
       const data = doc.data();
-      if (data.grade === level && data.curriculum === "English Course") {
+      if (data.grade === level && data.curriculum === "english") {
         levelStudents.push({ id: doc.id, ...data });
       }
     });
@@ -348,7 +348,8 @@ function Elementary() {
           className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
           onClick={handleModalClose}
         >
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full flex flex-col sm:flex-row gap-8">
+          <div className=" bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full flex flex-col sm:flex-row gap-8
+      mx-4 sm:mx-8 lg:ml-72">
             <div className="flex-1">
               <h2 className="text-xl font-bold mb-4">Students in {selectedClassroom.name}</h2>
               <ul className="max-h-96 overflow-y-auto">
@@ -375,12 +376,13 @@ function Elementary() {
               >
                 Upload Assignment
               </button>
-              <button
-                className="bg-teal-600 text-white px-4 py-2 rounded-md mt-4"
-                onClick={() => setUploadingLessonFor(selectedClassroom.name)} // Upload Lesson
-              >
-                Upload Lesson
-              </button>
+           <button
+  className="bg-teal-600 text-white px-4 py-2 rounded-md mt-4"
+  onClick={() => navigate(`/admin/upload-lesson/${selectedClassroom.name}`)}
+>
+  Upload Lesson
+</button>
+
             </div>
           </div>
         </div>
@@ -411,19 +413,7 @@ function Elementary() {
         </div>
       )}
 
-      {uploadingLessonFor && (
-        <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
-          onClick={handleModalClose}
-        >
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full">
-            <UploadLesson
-              classroomName={uploadingLessonFor}
-              onClose={() => setUploadingLessonFor(null)} // Fixed here
-            />
-          </div>
-        </div>
-      )}
+    
       {/* Register Classroom Modal */}
 {formOpen && (
   <div

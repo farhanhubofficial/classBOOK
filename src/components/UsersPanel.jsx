@@ -251,9 +251,7 @@ const renderStudentTable = (data) => (
     <div className="relative bg-white p-6 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-green-700">Users Management</h2>
-        <button onClick={onClose} className="text-red-500 text-xl">
-          <FaTimes />
-        </button>
+       
       </div>
 
       <div className="flex flex-wrap gap-4 mb-6">

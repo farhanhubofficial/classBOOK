@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
 import { getAuth } from "firebase/auth";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 function Lessons() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [studentClassroom, setStudentClassroom] = useState(null);
   const [expandedContent, setExpandedContent] = useState({});
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const fetchLessonsForStudent = async () => {
@@ -58,34 +60,51 @@ function Lessons() {
     setExpandedContent((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const goPrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? lessons.length - 1 : prev - 1));
+  };
+
+  const goNext = () => {
+    setCurrentIndex((prev) => (prev === lessons.length - 1 ? 0 : prev + 1));
+  };
+
   if (loading) return <p className="text-center mt-10">Loading lessons...</p>;
   if (!studentClassroom) return <p className="text-center text-red-600">No classroom assigned or user not authenticated.</p>;
   if (lessons.length === 0) return <p className="text-center mt-6">No lessons available for your classroom.</p>;
 
+  const lesson = lessons[currentIndex];
+  const isExpanded = expandedContent[lesson.id];
+
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">Lessons for {studentClassroom}</h1>
+    <div className="p-6 max-w-4xl mx-auto relative">
+      <h1 className="text-3xl font-bold mb-6 text-center text-blue-800 drop-shadow">
+        Lessons for {studentClassroom}
+      </h1>
 
-      {lessons.map((lesson) => {
-        const isExpanded = expandedContent[lesson.id];
-        const contentToShow =
-          isExpanded || (lesson.content?.length ?? 0) < 200
-            ? lesson.content
-            : `${lesson.content?.substring(0, 200)}...`;
+      <div className="relative flex items-center justify-center">
+        {/* Prev button (sticky left, with margin spacing) */}
+        <button
+          onClick={goPrev}
+          className="absolute -left-12 top-1/2 transform -translate-y-1/2 p-4 rounded-full bg-gray-100 shadow hover:bg-gray-200 transition"
+        >
+          <FaChevronLeft className="text-2xl text-blue-600" />
+        </button>
 
-        return (
-          <div key={lesson.id} className="border rounded-md p-5 mb-6 shadow-sm bg-white">
-            <h3 className="text-xl font-bold text-blue-700 mb-2">
-              {lesson.title || lesson.writtenTitle || lesson.fileTitle || "Untitled Lesson"}
-            </h3>
+        {/* Lesson card */}
+        <div className="border-2 border-blue-300 rounded-2xl p-6 w-full shadow-lg bg-gradient-to-br from-white to-blue-50 transition duration-300 h-[600px] flex flex-col mx-8">
+          <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
+            {lesson.title || lesson.writtenTitle || lesson.fileTitle || "Untitled Lesson"}
+          </h3>
 
+          {/* Scrollable content area */}
+          <div className="flex-1 overflow-y-auto pr-2">
             {lesson.content && (
-              <p className="mb-3 text-gray-700 whitespace-pre-wrap">
-                <strong>Content:</strong> {contentToShow}
-                {lesson.content.length > 200 && (
+              <p className="mb-4 text-gray-700 whitespace-pre-wrap text-justify">
+                {isExpanded ? lesson.content : lesson.content?.substring(0, 600) || ""}
+                {lesson.content?.length > 600 && (
                   <button
                     onClick={() => toggleContent(lesson.id)}
-                    className="ml-2 text-blue-500 hover:underline"
+                    className="ml-2 text-blue-500 font-medium hover:underline"
                   >
                     {isExpanded ? "See Less" : "See More"}
                   </button>
@@ -94,8 +113,8 @@ function Lessons() {
             )}
 
             {lesson.files?.length > 0 && (
-              <div className="mb-3">
-                <strong>Attached Files:</strong>
+              <div className="mb-4">
+                <strong className="block text-gray-800 mb-1">📂 Attached Files:</strong>
                 <ul className="list-disc list-inside text-gray-600">
                   {lesson.files.map((file, i) => (
                     <li key={i}>
@@ -112,13 +131,33 @@ function Lessons() {
                 </ul>
               </div>
             )}
-
-            <p className="text-sm text-gray-500">
-              Posted on: {lesson.createdAt.toLocaleString()}
-            </p>
           </div>
-        );
-      })}
+
+          <p className="text-sm text-gray-500 text-right italic mt-2">
+            📅 Posted on: {lesson.createdAt.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Next button (sticky right, with margin spacing) */}
+        <button
+          onClick={goNext}
+          className="absolute -right-12 top-1/2 transform -translate-y-1/2 p-4 rounded-full bg-gray-100 shadow hover:bg-gray-200 transition"
+        >
+          <FaChevronRight className="text-2xl text-blue-600" />
+        </button>
+      </div>
+
+      {/* Dots indicator */}
+      <div className="flex justify-center mt-4 space-x-2">
+        {lessons.map((_, i) => (
+          <div
+            key={i}
+            className={`w-3 h-3 rounded-full ${
+              i === currentIndex ? "bg-blue-600" : "bg-gray-300"
+            }`}
+          ></div>
+        ))}
+      </div>
     </div>
   );
 }

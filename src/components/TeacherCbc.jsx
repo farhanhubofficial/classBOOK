@@ -4,12 +4,13 @@ import {
   collection,
   addDoc,
   getDocs,
+  doc,
+  getDoc,
 } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-const grades = ["pp1", "pp2", ...Array.from({ length: 12 }, (_, i) => `grade_${i + 1}`)];
-
-const Cbc = () => {
+const TeacherCbc = () => {
   const [showModal, setShowModal] = useState(false);
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState("");
@@ -28,10 +29,41 @@ const Cbc = () => {
   const [newSubjectName, setNewSubjectName] = useState("");
   const [isSubjectAdding, setIsSubjectAdding] = useState(false);
 
-  const [gradeSubjects, setGradeSubjects] = useState([]); // Main view subjects
-  const [modalGradeSubjects, setModalGradeSubjects] = useState([]); // Modal subjects
+  const [gradeSubjects, setGradeSubjects] = useState([]);
+  const [modalGradeSubjects, setModalGradeSubjects] = useState([]);
 
-  // ✅ Add Topic Function
+  const [teacherData, setTeacherData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const auth = getAuth();
+
+  // 🔹 Fetch teacher profile
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        setTeacherData(null);
+        setLoading(false);
+        return;
+      }
+      try {
+        const teacherRef = doc(db, "users", user.uid);
+        const teacherSnap = await getDoc(teacherRef);
+        if (teacherSnap.exists()) {
+          setTeacherData(teacherSnap.data());
+        } else {
+          console.warn("No teacher profile found");
+        }
+      } catch (err) {
+        console.error("Error fetching teacher profile:", err);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // ✅ Add Topic
   const handleAddTopic = async () => {
     if (!modalGrade || !modalSubject || !newTopic.title || !newTopic.videoFile) {
       alert("Please fill in all required fields.");
@@ -54,8 +86,7 @@ const Cbc = () => {
       if (selectedGrade === modalGrade && selectedSubject === modalSubject) {
         const topicsRef = collection(db, "cbc", modalGrade, "subjects", modalSubject, "topics");
         const snapshot = await getDocs(topicsRef);
-        const topicList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setTopics(topicList);
+        setTopics(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
       }
 
       setNewTopic({ title: "", description: "", videoFile: null });
@@ -72,7 +103,7 @@ const Cbc = () => {
     }
   };
 
-  // ✅ Add Subject Function
+  // ✅ Add Subject
   const handleAddSubject = async () => {
     if (!newSubjectGrade || !newSubjectName) {
       alert("Please fill in all required fields.");
@@ -101,49 +132,44 @@ const Cbc = () => {
     }
   };
 
-  // ✅ Fetch subjects for selected grade in main view
+  // ✅ Fetch subjects for selected grade in main view (restricted to teacher subjects)
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (!selectedGrade) return;
+      if (!selectedGrade || !teacherData) return;
 
-      const subjectsRef = collection(db, "cbc", selectedGrade, "subjects");
-      const snapshot = await getDocs(subjectsRef);
-      const subjectList = snapshot.docs.map((doc) => doc.data().name);
-      setGradeSubjects(subjectList);
+      const teacherSubjects =
+        teacherData.subjects?.cbc?.[selectedGrade]?.map((s) => s.name) || [];
+
+      setGradeSubjects(teacherSubjects);
     };
 
     fetchSubjects();
-  }, [selectedGrade]);
+  }, [selectedGrade, teacherData]);
 
-  // ✅ Fetch subjects for modal grade selection
+  // ✅ Fetch subjects for modal grade (restricted to teacher subjects)
   useEffect(() => {
-    const fetchModalSubjects = async () => {
-      if (!modalGrade) return;
+    if (!modalGrade || !teacherData) return;
 
-      const subjectsRef = collection(db, "cbc", modalGrade, "subjects");
-      const snapshot = await getDocs(subjectsRef);
-      const subjectList = snapshot.docs.map((doc) => doc.data().name);
-      setModalGradeSubjects(subjectList);
-    };
+    const teacherSubjects =
+      teacherData.subjects?.cbc?.[modalGrade]?.map((s) => s.name) || [];
 
-    fetchModalSubjects();
-  }, [modalGrade]);
+    setModalGradeSubjects(teacherSubjects);
+  }, [modalGrade, teacherData]);
 
-  // ✅ Fetch topics when grade + subject are selected
+  // ✅ Fetch topics when grade + subject selected
   useEffect(() => {
     const fetchTopics = async () => {
       if (!selectedGrade || !selectedSubject) return;
 
       const topicsRef = collection(db, "cbc", selectedGrade, "subjects", selectedSubject, "topics");
       const snapshot = await getDocs(topicsRef);
-      const topicList = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setTopics(topicList);
+      setTopics(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     };
 
     fetchTopics();
   }, [selectedGrade, selectedSubject]);
 
-  // Navigation + UI logic
+  // Navigation + UI
   const handleGradeClick = (grade) => {
     setViewHistory((prev) => [...prev, { level: 0 }]);
     setSelectedGrade(grade);
@@ -207,48 +233,27 @@ const Cbc = () => {
     setModalViewHistory(updated);
   };
 
+  if (loading) return <p className="text-center mt-10">Loading teacher CBC data...</p>;
+  if (!teacherData) return <p className="text-center text-red-500 mt-10">No teacher profile found.</p>;
+  if (!teacherData.curriculum?.includes("cbc"))
+    return <p className="text-center text-yellow-500 mt-10">You are not assigned to CBC curriculum.</p>;
+
+  const teacherGrades = teacherData.grade?.cbc || [];
+
   return (
     <div className="space-y-6 p-6 max-w-6xl mx-auto">
-      {/* Top Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-green-100 p-6 rounded shadow text-center">
-          <h3 className="text-lg font-bold text-green-600">Total CBC Students</h3>
-          <p className="text-4xl font-extrabold text-gray-800 mt-2">850</p>
-        </div>
-        <div className="bg-blue-100 p-6 rounded shadow text-center">
-          <h3 className="text-lg font-bold text-blue-600">Total CBC Parents</h3>
-          <p className="text-4xl font-extrabold text-gray-800 mt-2">310</p>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="text-right">
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold mr-4"
-        >
-          ➕ Add New CBC Topic
-        </button>
-        <button
-          onClick={() => setShowSubjectModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold"
-        >
-          ➕ Register New Grade Subject
-        </button>
-      </div>
-
-      {/* Grade Selection */}
+      {/* Grade Selection (only teacher’s CBC grades) */}
       {!selectedGrade && (
         <div>
-          <h3 className="text-xl font-bold mb-4 text-center">Select a Grade to View Topics</h3>
+          <h3 className="text-xl font-bold mb-4 text-center">Select Your CBC Grade</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-            {grades.map((grade) => (
+            {teacherGrades.map((grade) => (
               <div
                 key={grade}
                 onClick={() => handleGradeClick(grade)}
                 className="bg-blue-200 p-4 rounded-lg cursor-pointer text-center hover:bg-blue-300"
               >
-                <h3 className="font-semibold">{grade.replace("_", " ").toUpperCase()}</h3>
+                <h3 className="font-semibold">{grade.toUpperCase()}</h3>
               </div>
             ))}
           </div>
@@ -271,7 +276,7 @@ const Cbc = () => {
       {selectedGrade && !selectedSubject && (
         <div>
           <h3 className="text-xl font-semibold text-center mb-4">
-            Select a Subject for {selectedGrade.replace("_", " ").toUpperCase()}
+            Select a Subject for {selectedGrade.toUpperCase()}
           </h3>
           <div className="flex flex-wrap gap-4 justify-center">
             {gradeSubjects.length > 0 ? (
@@ -285,7 +290,9 @@ const Cbc = () => {
                 </button>
               ))
             ) : (
-              <p className="text-center text-gray-500 col-span-full">No subjects registered for this grade yet.</p>
+              <p className="text-center text-gray-500 col-span-full">
+                No subjects registered for this grade yet.
+              </p>
             )}
           </div>
         </div>
@@ -365,9 +372,9 @@ const Cbc = () => {
                   }}
                 >
                   <option value="">-- Select Grade --</option>
-                  {grades.map((grade) => (
+                  {teacherGrades.map((grade) => (
                     <option key={grade} value={grade}>
-                      {grade.replace("_", " ").toUpperCase()}
+                      {grade.toUpperCase()}
                     </option>
                   ))}
                 </select>
@@ -450,9 +457,9 @@ const Cbc = () => {
                   onChange={(e) => setNewSubjectGrade(e.target.value)}
                 >
                   <option value="">-- Select Grade --</option>
-                  {grades.map((grade) => (
+                  {teacherGrades.map((grade) => (
                     <option key={grade} value={grade}>
-                      {grade.replace("_", " ").toUpperCase()}
+                      {grade.toUpperCase()}
                     </option>
                   ))}
                 </select>
@@ -486,4 +493,4 @@ const Cbc = () => {
   );
 };
 
-export default Cbc;
+export default TeacherCbc;

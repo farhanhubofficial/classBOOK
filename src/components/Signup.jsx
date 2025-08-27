@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase-config";
 
@@ -14,18 +14,42 @@ function Signup() {
     category: "",
     curriculum: "",
     grade: "",
+    selectedCurricula: [],
+    gradesByCurriculum: {},
+    gradesByCurriculumSubjects: {},
   });
   const [error, setError] = useState("");
+  const [subjects, setSubjects] = useState({});
   const navigate = useNavigate();
 
   const CBCGrades = [
-    "Pre-Primary 1 (PP1)", "Pre-Primary 2 (PP2)", "Grade 1", "Grade 2", "Grade 3",
-    "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9"
+    "Pre-Primary 1 (PP1)",
+    "Pre-Primary 2 (PP2)",
+    "Grade 1",
+    "Grade 2",
+    "Grade 3",
+    "Grade 4",
+    "Grade 5",
+    "Grade 6",
+    "Grade 7",
+    "Grade 8",
+    "Grade 9",
   ];
 
   const IGCSEGrades = [
-    "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "Year 7",
-    "Year 8", "Year 9", "Year 10", "Year 11", "Year 12", "Year 13"
+    "Year 1",
+    "Year 2",
+    "Year 3",
+    "Year 4",
+    "Year 5",
+    "Year 6",
+    "Year 7",
+    "Year 8",
+    "Year 9",
+    "Year 10",
+    "Year 11",
+    "Year 12",
+    "Year 13",
   ];
 
   const EnglishLevels = [
@@ -34,20 +58,20 @@ function Signup() {
     "B1 (Intermediate)",
     "B2 (Upper Intermediate)",
     "C1 (Advanced)",
-    "C2 (Proficiency)"
+    "C2 (Proficiency)",
   ];
 
   const SomaliLevels = [
     "Bilow (Beginner)",
     "Hoose (Elementary)",
     "Dhexdhexaad (Intermediate)",
-    "Sare (Advanced)"
+    "Sare (Advanced)",
   ];
 
   const KiswahiliLevels = [
     "Kiwango cha Msingi (Beginner)",
     "Kiwango cha Kati (Intermediate)",
-    "Kiwango cha Juu (Advanced)"
+    "Kiwango cha Juu (Advanced)",
   ];
 
   const ArabicLevels = [
@@ -55,7 +79,7 @@ function Signup() {
     "أساسي (Elementary)",
     "متوسط (Intermediate)",
     "متقدم (Advanced)",
-    "إجادة (Proficiency)"
+    "إجادة (Proficiency)",
   ];
 
   const handleChange = (e) => {
@@ -66,6 +90,28 @@ function Signup() {
     setError("");
   };
 
+  const handleCurriculumSelect = (e) => {
+    const { options } = e.target;
+    const selected = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) selected.push(options[i].value);
+    }
+    setFormData({
+      ...formData,
+      selectedCurricula: selected,
+    });
+  };
+
+  const handleGradeSelect = (curriculum, selectedGrades) => {
+    setFormData((prev) => ({
+      ...prev,
+      gradesByCurriculum: {
+        ...prev.gradesByCurriculum,
+        [curriculum]: selectedGrades,
+      },
+    }));
+  };
+
   const handleSignup = async (e) => {
     e.preventDefault();
 
@@ -73,8 +119,31 @@ function Signup() {
       return setError("Passwords do not match");
     }
 
+    // ✅ validation: teachers must have at least one subject per grade
+  if (formData.category === "teacher") {
+  for (const curr of formData.selectedCurricula) {
+    // ✅ Only enforce subjects for CBC and IGCSE
+    if (curr === "cbc" || curr === "igcse") {
+      for (const grade of formData.gradesByCurriculum[curr] || []) {
+        const subjectsInGrade =
+          formData.gradesByCurriculumSubjects?.[curr]?.[grade] || [];
+        if (subjectsInGrade.length === 0) {
+          return setError(
+            `Please select at least one subject for ${grade} in ${curr.toUpperCase()}`
+          );
+        }
+      }
+    }
+  }
+}
+
+
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
       const user = userCredential.user;
 
       await updateProfile(user, {
@@ -83,47 +152,91 @@ function Signup() {
 
       const userDocRef = doc(db, "users", user.uid);
       const role = formData.category;
-await setDoc(userDocRef, {
-  email: formData.email,
-  firstName: formData.firstName,
-  lastName: formData.lastName,
-  role,
-  category: formData.category,
-  curriculum:
-    formData.curriculum === "english"
-      ? "English Course"
-      : formData.curriculum === "somali"
-      ? "Somali Course"
-      : formData.curriculum === "arabic"
-      ? "Arabic Course"
-      : formData.curriculum === "kiswahili"
-      ? "Kiswahili Course"
-      : formData.curriculum || null,
-  grade: formData.grade || null,
-  daysPresent: 0,
-  daysAbsent: 0,
-  courseDuration: 0,
-  dateRegistered: new Date(),
-  lastLogin: new Date(), // ✅ Add this line
-});
 
-
-
+      await setDoc(userDocRef, {
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        role,
+        category: formData.category,
+        curriculum:
+          role === "teacher"
+            ? formData.selectedCurricula
+            : formData.curriculum || null,
+        grade:
+          role === "teacher"
+            ? formData.gradesByCurriculum
+            : formData.grade || null,
+        subjects:
+          role === "teacher" ? formData.gradesByCurriculumSubjects || {} : null,
+        daysPresent: 0,
+        daysAbsent: 0,
+        courseDuration: 0,
+        dateRegistered: new Date(),
+        lastLogin: new Date(),
+      });
 
       if (role === "admin") {
         navigate("/admin");
       } else if (formData.category === "learner") {
         navigate("/students/dashboard");
       } else if (formData.category === "teacher") {
-  navigate("/teacherdashboard");
-      
-      }else {
+        navigate("/teacher/dashboard");
+      } else {
         navigate("/");
       }
     } catch (error) {
       setError("Signup failed: " + error.message);
     }
   };
+
+  const getGradeOptions = (curriculum) => {
+    switch (curriculum) {
+      case "cbc":
+        return CBCGrades;
+      case "igcse":
+        return IGCSEGrades;
+      case "english":
+        return EnglishLevels;
+      case "somali":
+        return SomaliLevels;
+      case "kiswahili":
+        return KiswahiliLevels;
+      case "arabic":
+        return ArabicLevels;
+      default:
+        return [];
+    }
+  };
+
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      let allSubjects = {};
+      for (const curr of formData.selectedCurricula) {
+        allSubjects[curr] = {};
+        const grades = formData.gradesByCurriculum[curr] || [];
+
+        for (const grade of grades) {
+          try {
+            const path = `${curr}/${grade}/subjects`;
+            const snap = await getDocs(collection(db, path));
+            allSubjects[curr][grade] = snap.docs.map((d) => ({
+              id: d.id,
+              name: d.data().name,
+            }));
+          } catch (err) {
+            console.error("Error fetching subjects for", curr, grade, err);
+            allSubjects[curr][grade] = [];
+          }
+        }
+      }
+      setSubjects(allSubjects);
+    };
+
+    if (formData.selectedCurricula.length > 0) {
+      fetchSubjects();
+    }
+  }, [formData.selectedCurricula, formData.gradesByCurriculum]);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -209,85 +322,140 @@ await setDoc(userDocRef, {
               </select>
 
               {formData.curriculum && (
-                <>
-                  {formData.curriculum === "cbc" || formData.curriculum === "igcse" ? (
-                    <select
-                      name="grade"
-                      value={formData.grade}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-lg bg-white"
-                    >
-                      <option value="">Select Grade</option>
-                      {(formData.curriculum === "cbc" ? CBCGrades : IGCSEGrades).map((grade) => (
-                        <option key={grade} value={grade}>
-                          {grade}
-                        </option>
-                      ))}
-                    </select>
-                  ) : formData.curriculum === "english" ? (
-                    <select
-                      name="grade"
-                      value={formData.grade}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-lg bg-white"
-                    >
-                      <option value="">Select Level</option>
-                      {EnglishLevels.map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))}
-                    </select>
-                  ) : formData.curriculum === "somali" ? (
-                    <select
-                      name="grade"
-                      value={formData.grade}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-lg bg-white"
-                    >
-                      <option value="">Select Level</option>
-                      {SomaliLevels.map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))}
-                    </select>
-                  ) : formData.curriculum === "kiswahili" ? (
-                    <select
-                      name="grade"
-                      value={formData.grade}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-lg bg-white"
-                    >
-                      <option value="">Select Level</option>
-                      {KiswahiliLevels.map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))}
-                    </select>
-                  ) : formData.curriculum === "arabic" ? (
-                    <select
-                      name="grade"
-                      value={formData.grade}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-lg bg-white"
-                    >
-                      <option value="">Select Level</option>
-                      {ArabicLevels.map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))}
-                    </select>
-                  ) : null}
-                </>
+                <select
+                  name="grade"
+                  value={formData.grade}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border rounded-lg bg-white"
+                >
+                  <option value="">
+                    {formData.curriculum === "cbc" ||
+                    formData.curriculum === "igcse"
+                      ? "Select Grade"
+                      : "Select Level"}
+                  </option>
+                  {getGradeOptions(formData.curriculum).map((grade) => (
+                    <option key={grade} value={grade}>
+                      {grade}
+                    </option>
+                  ))}
+                </select>
               )}
+            </>
+          )}
+
+          {formData.category === "teacher" && (
+            <>
+              <label className="block font-medium">
+                Select Curricula (multiple)
+              </label>
+              <div className="space-y-2">
+                {["cbc", "igcse", "english", "arabic", "somali", "kiswahili"].map(
+                  (curr) => (
+                    <label key={curr} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        value={curr}
+                        checked={formData.selectedCurricula.includes(curr)}
+                        onChange={(e) => {
+                          let updated = [...formData.selectedCurricula];
+                          if (e.target.checked) {
+                            updated.push(curr);
+                          } else {
+                            updated = updated.filter((c) => c !== curr);
+                          }
+                          setFormData({ ...formData, selectedCurricula: updated });
+                        }}
+                      />
+                      <span className="capitalize">{curr}</span>
+                    </label>
+                  )
+                )}
+              </div>
+
+              {formData.selectedCurricula.map((curr) => (
+                <div key={curr} className="mt-3">
+                  <label className="block font-medium">
+                    Choose {curr === "cbc" || curr === "igcse" ? "Grades" : "Levels"} for {curr.toUpperCase()}
+                  </label>
+                  <select
+                    multiple
+                    value={formData.gradesByCurriculum[curr] || []}
+                    onChange={(e) => {
+                      const { options } = e.target;
+                      const selectedGrades = [];
+                      for (let i = 0; i < options.length; i++) {
+                        if (options[i].selected) selectedGrades.push(options[i].value);
+                      }
+                      handleGradeSelect(curr, selectedGrades);
+                    }}
+                    className="w-full px-4 py-2 border rounded-lg bg-white"
+                  >
+                    {getGradeOptions(curr).map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
+
+                  {(curr === "cbc" || curr === "igcse") &&
+                    (formData.gradesByCurriculum[curr] || []).map((grade) => (
+                      <div key={grade} className="mt-2 ml-4">
+                        <label className="block font-medium">
+                          Select Subjects for {grade}
+                        </label>
+                        <div className="space-y-1">
+                          {(subjects[curr]?.[grade] || []).map((subj) => (
+                            <label
+                              key={subj.id}
+                              className="flex items-center space-x-2 text-sm"
+                            >
+                              <input
+                                type="checkbox"
+                                value={subj.id}
+                                checked={
+                                  (formData.gradesByCurriculumSubjects?.[curr]?.[grade] || [])
+                                    .some((s) => s.id === subj.id)
+                                }
+                                onChange={(e) => {
+                                  setFormData((prev) => {
+                                    const prevSubs =
+                                      prev.gradesByCurriculumSubjects?.[curr]?.[grade] || [];
+                                    let updatedSubs;
+
+                                    if (e.target.checked) {
+                                      updatedSubs = [
+                                        ...prevSubs,
+                                        { id: subj.id, name: subj.name },
+                                      ];
+                                    } else {
+                                      updatedSubs = prevSubs.filter(
+                                        (s) => s.id !== subj.id
+                                      );
+                                    }
+
+                                    return {
+                                      ...prev,
+                                      gradesByCurriculumSubjects: {
+                                        ...prev.gradesByCurriculumSubjects,
+                                        [curr]: {
+                                          ...(prev.gradesByCurriculumSubjects?.[curr] || {}),
+                                          [grade]: updatedSubs,
+                                        },
+                                      },
+                                    };
+                                  });
+                                }}
+                              />
+                              <span>{subj.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ))}
             </>
           )}
 

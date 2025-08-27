@@ -108,7 +108,7 @@ const StudentDashboard = () => {
           <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/dashboard")}> <FaUserCircle /> Dashboard </button>
           <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/settings")}> <FiSettings /> Settings </button>
 
-          {["English Course", "Kiswahili Course", "Somali Course", "Arabic Course"].includes(userData?.curriculum) ? (
+          {["english", "Kiswahili Course", "Somali Course", "Arabic Course"].includes(userData?.curriculum) ? (
             <>
               <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lessons")}> <GiSpellBook /> Lessons </button>
               <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lesson-documents")}> <MdDescription /> Lesson Documents </button>

@@ -112,7 +112,15 @@ const TeacherDashboard = () => {
             {userData ? `${userData.role}` : "Loading..."}
           </h2>
           <p className="text-sm text-gray-600">{userData?.category || "Loading..."}</p>
-          <p className="text-sm text-gray-600 uppercase font-bold">{userData?.curriculum || "Loading..."}</p>
+         <p className="text-sm text-black  ">
+  {userData?.curriculum
+    ? userData.curriculum.map(
+        (cur) =>
+          cur.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+      ).join(", ")
+    : "Loading..."}
+</p>
+
         </div>
 
         <nav className="space-y-3">
@@ -120,27 +128,36 @@ const TeacherDashboard = () => {
             <FaTachometerAlt /> Dashboard
           </button>
 
-          <div>
-            <button
-              onClick={toggleCurriculumDropdown}
-              className="flex items-center gap-2 p-2 w-full hover:bg-green-100 rounded justify-between"
-            >
-              <span className="flex items-center gap-2">
-                <FaBook /> Curriculum
-              </span>
-              {curriculumDropdownOpen ? <MdExpandLess /> : <MdExpandMore />}
-            </button>
-            {curriculumDropdownOpen && (
-              <div className="pl-6 space-y-2 mt-2">
-                <button onClick={() => navigate("/teacher/curriculum/cbc")} className="block hover:text-green-600">CBC</button>
-                <button onClick={() => navigate("/teacher/curriculum/igcse")} className="block hover:text-green-600">IGCSE</button>
-                <button onClick={() => navigate("/teacher/curriculum/english-course")} className="block hover:text-green-600">English Course</button>
-                <button onClick={() => navigate("/teacher/curriculum/arabic-course")} className="block hover:text-green-600">Arabic Course</button>
-                <button onClick={() => navigate("/teacher/curriculum/kiswahili-course")} className="block hover:text-green-600">Kiswahili Course</button>
-                <button onClick={() => navigate("/teacher/curriculum/somali-course")} className="block hover:text-green-600">Somali Course</button>
-              </div>
-            )}
-          </div>
+       <div>
+  <button
+    onClick={toggleCurriculumDropdown}
+    className="flex items-center gap-2 p-2 w-full hover:bg-green-100 rounded justify-between"
+  >
+    <span className="flex items-center gap-2">
+      <FaBook /> Curriculum
+    </span>
+    {curriculumDropdownOpen ? <MdExpandLess /> : <MdExpandMore />}
+  </button>
+
+  {curriculumDropdownOpen && userData?.curriculum?.length > 0 && (
+    <div className="pl-6 space-y-2 mt-2">
+      {userData.curriculum.map((cur, index) => {
+        // normalize route path
+        const routePath = `/teacher/curriculum/${cur.toLowerCase().replace(/\s+/g, "-")}`;
+        return (
+          <button
+            key={index}
+            onClick={() => navigate(routePath)}
+            className="block hover:text-green-600 capitalize"
+          >
+            {cur}
+          </button>
+        );
+      })}
+    </div>
+  )}
+</div>
+
 
           <button onClick={() => navigate("/teacher/students")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaUserGraduate /> Students

@@ -163,7 +163,7 @@ const AdminDashboard = () => {
             <FaUserGraduate /> Students
           </button>
 
-          <button onClick={() => setShowUsersPanel(true)} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
+          <button onClick={() => navigate("/admin/users")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaUsers /> Users
           </button>
 
@@ -175,7 +175,7 @@ const AdminDashboard = () => {
             <FaWallet /> Payment Status
           </button>
 
-          <button onClick={() => navigate("/admin/account")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
+          <button onClick={() => navigate("/admin/accountmanagement")} className="flex items-center gap-2 p-2 hover:bg-green-100 rounded">
             <FaRegUser /> Account
           </button>
 

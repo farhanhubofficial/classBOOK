@@ -5,6 +5,7 @@ import CurriculumHome from './CurriculumHome';
 import SettingsPanel from './SettingPanel';
 import CbcHome from './CbcHome';
 import TeacherDashboard from './TeacherDashboard'; // adjust path if needed
+import AccountManagement from './AccountManagement';
 
 import GradeView from './GradeView';
 import SubjectView from './SubjectView';
@@ -48,10 +49,9 @@ import Beginner from './Beginner';
 import StudentAssignments from './StudentAssignments';
 import ViewSubmittedAssignment from './ViewSubmittedAssignment';
 import UploadAssignment from './UploadAssignment';
-
+import UploadLesson from './UploadLesson';
 import { useAuth } from './AuthContext';
 import LoadingScreen from './LoadingScreen'; // ✅ custom loading component
-import Footer from './Footer'; // ✅ import Footer
 
 function Connectivity() {
   const location = useLocation();
@@ -61,7 +61,6 @@ function Connectivity() {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isStudentRoute = location.pathname.startsWith('/students');
   const showHeader = !isAdminRoute && !isStudentRoute && location.pathname !== '/learners-dashboard';
-  const showFooter = !isAdminRoute && !isStudentRoute && location.pathname !== '/learners-dashboard'; // ✅ show footer only on public routes
 
   useEffect(() => {
     if (!loading && user && userData) {
@@ -85,7 +84,7 @@ function Connectivity() {
       {showHeader && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/teacherdashboard" element={<TeacherDashboard />} />
+<Route path="/teacherdashboard" element={<TeacherDashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
 
@@ -94,12 +93,21 @@ function Connectivity() {
           <Route path="dashboard" element={<DashboardHome />} />
           <Route path="settingspanel" element={<SettingsPanel />} />
 
-          <Route path="curriculum/:curriculum">
-            <Route index element={<CurriculumHome />} />
-            <Route path=":grade" element={<GradeView />} />
-            <Route path=":grade/:subject" element={<SubjectView />} />
-            <Route path=":grade/:subject/:topicId" element={<TopicView />} />
-          </Route>
+
+          
+<Route path="curriculum/:curriculum">
+  <Route index element={<CurriculumHome />} />
+  <Route path=":grade" element={<GradeView />} />
+  <Route path=":grade/:subject" element={<SubjectView />} />
+  <Route path=":grade/:subject/:topicId" element={<TopicView />} />
+</Route>
+
+
+
+
+
+
+
 
           <Route path="curriculum/english-course" element={<EnglishClass />} />
           <Route path="curriculum/english-course/beginner" element={<Beginner />} />
@@ -117,9 +125,22 @@ function Connectivity() {
           <Route path="curriculum/kiswahili-course" element={<Kiswahili />} />
           <Route path="students" element={<Students />} />
           <Route path="payments" element={<PaymentStatus />} />
-          <Route path="view-assignments/:classroomName" element={<ViewSubmittedAssignment />} />
-          <Route path="upload-assignments/:classroomName" element={<UploadAssignment />} />
+  <Route path="view-assignments/:classroomName" element={<ViewSubmittedAssignment />} />
+    <Route path="upload-assignments/:classroomName" element={<UploadAssignment />} />
+
+
+
         </Route>
+
+ <Route path='/teacher' element = {<TeacherDashboard/>}> 
+  <Route path='dashboard' element = {<TrDashboard/>}/>
+  <Route path='curriculum/cbc' element = {<TeacherCbc/>}/>
+ </Route>
+
+
+
+
+
 
         {/* Student Routes */}
         <Route path="/students" element={<StudentDashboard />}>
