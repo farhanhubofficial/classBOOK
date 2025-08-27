@@ -82,7 +82,7 @@ function Lessons() {
       </h1>
 
       <div className="relative flex items-center justify-center">
-        {/* Prev button (sticky left, with margin spacing) */}
+        {/* Prev button */}
         <button
           onClick={goPrev}
           className="absolute -left-12 top-1/2 transform -translate-y-1/2 p-4 rounded-full bg-gray-100 shadow hover:bg-gray-200 transition"
@@ -92,15 +92,26 @@ function Lessons() {
 
         {/* Lesson card */}
         <div className="border-2 border-blue-300 rounded-2xl p-6 w-full shadow-lg bg-gradient-to-br from-white to-blue-50 transition duration-300 h-[600px] flex flex-col mx-8">
-          <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
-            {lesson.title || lesson.writtenTitle || lesson.fileTitle || "Untitled Lesson"}
-          </h3>
+          {/* ✅ FIXED: render title as HTML with formatting */}
+          <h3
+            className="text-2xl font-semibold text-blue-700 mb-3 text-center"
+            dangerouslySetInnerHTML={{
+              __html: lesson.title || lesson.writtenTitle || lesson.fileTitle || "Untitled Lesson",
+            }}
+          />
 
           {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto pr-2">
             {lesson.content && (
-              <p className="mb-4 text-gray-700 whitespace-pre-wrap text-justify">
-                {isExpanded ? lesson.content : lesson.content?.substring(0, 600) || ""}
+              <div className="mb-4 text-gray-700 text-justify">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: isExpanded
+                      ? lesson.content
+                      : (lesson.content || "").slice(0, 600) +
+                        (lesson.content.length > 600 ? "..." : ""),
+                  }}
+                />
                 {lesson.content?.length > 600 && (
                   <button
                     onClick={() => toggleContent(lesson.id)}
@@ -109,7 +120,7 @@ function Lessons() {
                     {isExpanded ? "See Less" : "See More"}
                   </button>
                 )}
-              </p>
+              </div>
             )}
 
             {lesson.files?.length > 0 && (
@@ -138,7 +149,7 @@ function Lessons() {
           </p>
         </div>
 
-        {/* Next button (sticky right, with margin spacing) */}
+        {/* Next button */}
         <button
           onClick={goNext}
           className="absolute -right-12 top-1/2 transform -translate-y-1/2 p-4 rounded-full bg-gray-100 shadow hover:bg-gray-200 transition"

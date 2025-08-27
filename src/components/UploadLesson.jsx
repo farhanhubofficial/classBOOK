@@ -11,15 +11,217 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase-config";
 
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
+import { Highlight } from "@tiptap/extension-highlight";
+import { FontFamily } from "@tiptap/extension-font-family";
+import { FontSize } from "@tiptap/extension-font-size";
+import TextAlign from "@tiptap/extension-text-align";
+
+// ❌ remove these (StarterKit already includes them)
+// import BulletList from "@tiptap/extension-bullet-list";
+// import OrderedList from "@tiptap/extension-ordered-list";
+// import ListItem from "@tiptap/extension-list-item";
+
+// ✅ Import icons for professional toolbar look
+import {
+  Bold,
+  Italic,
+  Strikethrough,
+  List,
+  ListOrdered,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Eraser,
+} from "lucide-react";
+
+// ---------- Global Toolbar ----------
+const GlobalToolbar = ({ activeEditor }) => {
+  const run = (fn) => activeEditor && fn(activeEditor);
+
+  const applyColor = (color) =>
+    run((e) => e.chain().focus().setColor(color).run());
+  const applyBgColor = (color) =>
+    run((e) => e.chain().focus().setHighlight({ color }).run());
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 mb-4 border-b pb-3 bg-gray-50 px-3 py-2 rounded-lg shadow-sm">
+      <button
+        onClick={() => run((e) => e.chain().focus().toggleBold().run())}
+        className="p-2 hover:bg-gray-200 rounded"
+        title="Bold"
+      >
+        <Bold size={18} />
+      </button>
+
+      <button
+        onClick={() => run((e) => e.chain().focus().toggleItalic().run())}
+        className="p-2 hover:bg-gray-200 rounded"
+        title="Italic"
+      >
+        <Italic size={18} />
+      </button>
+
+      <button
+        onClick={() => run((e) => e.chain().focus().toggleStrike().run())}
+        className="p-2 hover:bg-gray-200 rounded"
+        title="Strike"
+      >
+        <Strikethrough size={18} />
+      </button>
+
+      <button
+        onClick={() => run((e) => e.chain().focus().toggleBulletList().run())}
+        className="p-2 hover:bg-gray-200 rounded"
+        title="Bullet List"
+      >
+        <List size={18} />
+      </button>
+
+      <button
+        onClick={() => run((e) => e.chain().focus().toggleOrderedList().run())}
+        className="p-2 hover:bg-gray-200 rounded"
+        title="Numbered List"
+      >
+        <ListOrdered size={18} />
+      </button>
+
+      <button
+        onClick={() => run((e) => e.chain().focus().setTextAlign("left").run())}
+        className="p-2 hover:bg-gray-200 rounded"
+        title="Align Left"
+      >
+        <AlignLeft size={18} />
+      </button>
+
+      <button
+        onClick={() =>
+          run((e) => e.chain().focus().setTextAlign("center").run())
+        }
+        className="p-2 hover:bg-gray-200 rounded"
+        title="Align Center"
+      >
+        <AlignCenter size={18} />
+      </button>
+
+      <button
+        onClick={() => run((e) => e.chain().focus().setTextAlign("right").run())}
+        className="p-2 hover:bg-gray-200 rounded"
+        title="Align Right"
+      >
+        <AlignRight size={18} />
+      </button>
+
+      <button
+        onClick={() =>
+          run((e) => e.chain().focus().unsetAllMarks().clearNodes().run())
+        }
+        className="p-2 hover:bg-gray-200 rounded"
+        title="Clear Formatting"
+      >
+        <Eraser size={18} />
+      </button>
+
+      {/* Color pickers */}
+      <input
+        type="color"
+        onChange={(e) => applyColor(e.target.value)}
+        className="w-8 h-8 cursor-pointer border rounded"
+        title="Text Color"
+      />
+      <input
+        type="color"
+        onChange={(e) => applyBgColor(e.target.value)}
+        className="w-8 h-8 cursor-pointer border rounded"
+        title="Background Color"
+      />
+
+      {/* Font Family */}
+      <select
+        onChange={(e) =>
+          run((ed) => ed.chain().focus().setFontFamily(e.target.value).run())
+        }
+        className="border px-2 py-1 rounded text-sm"
+      >
+        <option value="">Font</option>
+        <option value="Arial">Arial</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Tahoma">Tahoma</option>
+        <option value="Courier New">Courier New</option>
+      </select>
+
+      {/* Font Size */}
+      <select
+        onChange={(e) =>
+          run((ed) => ed.chain().focus().setFontSize(e.target.value).run())
+        }
+        className="border px-2 py-1 rounded text-sm"
+      >
+        <option value="">Size</option>
+        <option value="12px">12px</option>
+        <option value="16px">16px</option>
+        <option value="20px">20px</option>
+        <option value="24px">24px</option>
+      </select>
+    </div>
+  );
+};
+
 function UploadLesson() {
   const { classroomName } = useParams();
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [lessonContent, setLessonContent] = useState("");
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(true);
+
+  // ---------------- Tiptap Editors ----------------
+  const [activeEditor, setActiveEditor] = useState(null);
+
+  const titleEditor = useEditor({
+    extensions: [
+      StarterKit, // ✅ lists included
+      TextStyle,
+      Color,
+      Highlight,
+      FontFamily.configure({ types: ["textStyle"] }),
+      FontSize.configure({ types: ["textStyle"] }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+    ],
+    content: "",
+    editorProps: {
+      attributes: {
+        class:
+          "w-full border border-gray-300 rounded p-2 min-h-[40px] focus:outline-none",
+      },
+    },
+  });
+
+  const contentEditor = useEditor({
+    extensions: [
+      StarterKit, // ✅ lists included
+      TextStyle,
+      Color,
+      Highlight,
+      FontFamily.configure({ types: ["textStyle"] }),
+      FontSize.configure({ types: ["textStyle"] }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+    ],
+    content: "",
+    editorProps: {
+      attributes: {
+        class:
+          "w-full border border-gray-300 rounded p-3 min-h-[200px] focus:outline-none",
+      },
+    },
+  });
+
+  // ------------------------------------------------
+  // ✅ Rest of your code unchanged …
+  // ------------------------------------------------
 
   const handleFileChange = (e) => {
     setFiles(Array.from(e.target.files));
@@ -27,20 +229,21 @@ function UploadLesson() {
 
   const handleClose = () => {
     setIsModalVisible(false);
-    navigate(-1); // go back to previous page
+    navigate(-1);
   };
 
   const handleSubmit = async () => {
-    if (!title.trim()) {
+    const title = titleEditor?.getHTML().trim();
+    const lessonContent = contentEditor?.getHTML().trim();
+
+    if (!title) {
       alert("Please enter a lesson title.");
       return;
     }
-
-    if (!lessonContent.trim() && files.length === 0) {
+    if (!lessonContent && files.length === 0) {
       alert("Please provide lesson content or upload files.");
       return;
     }
-
     if (!classroomName) {
       alert("Missing classroom name in URL.");
       return;
@@ -49,7 +252,6 @@ function UploadLesson() {
     setUploading(true);
 
     try {
-      // Fetch learners in this classroom
       const usersQuery = query(
         collection(db, "users"),
         where("role", "==", "learner"),
@@ -58,15 +260,9 @@ function UploadLesson() {
       const learnerSnap = await getDocs(usersQuery);
       const learners = learnerSnap.docs.map((doc) => {
         const { firstName, lastName, email } = doc.data();
-        return {
-          id: doc.id,
-          firstName,
-          lastName,
-          email,
-        };
+        return { id: doc.id, firstName, lastName, email };
       });
 
-      // Upload lesson files
       const uploadedFiles = await Promise.all(
         files.map(async (file) => {
           const fileRef = ref(
@@ -79,10 +275,9 @@ function UploadLesson() {
         })
       );
 
-      // Save lesson in Firestore
       const lessonData = {
-        title: title.trim(),
-        content: lessonContent.trim(),
+        title,
+        content: lessonContent,
         files: uploadedFiles,
         createdAt: Timestamp.now(),
         date: new Date().toISOString(),
@@ -94,8 +289,8 @@ function UploadLesson() {
       await addDoc(collection(db, "lessons"), lessonData);
 
       alert("Lesson uploaded successfully!");
-      setTitle("");
-      setLessonContent("");
+      titleEditor?.commands.clearContent();
+      contentEditor?.commands.clearContent();
       setFiles([]);
       handleClose();
     } catch (error) {
@@ -125,28 +320,32 @@ function UploadLesson() {
           Upload Lesson - {classroomName}
         </h2>
 
+        {/* Toolbar (shared between editors) */}
+        <GlobalToolbar activeEditor={activeEditor} />
+
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-1">
-            <label className="block text-sm font-semibold mb-2">Lesson Title</label>
-            <input
-              type="text"
-              placeholder="Enter Lesson Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-gray-300 p-3 rounded mb-6"
+            <label className="block text-sm font-semibold mb-2">
+              Lesson Title
+            </label>
+            <EditorContent
+              editor={titleEditor}
+              onFocus={() => setActiveEditor(titleEditor)}
             />
 
-            <label className="block text-sm font-semibold mb-2">Lesson Content</label>
-            <textarea
-              className="w-full border border-gray-300 p-4 rounded min-h-[200px]"
-              placeholder="Write lesson content or summary..."
-              value={lessonContent}
-              onChange={(e) => setLessonContent(e.target.value)}
+            <label className="block text-sm font-semibold mt-6 mb-2">
+              Lesson Content
+            </label>
+            <EditorContent
+              editor={contentEditor}
+              onFocus={() => setActiveEditor(contentEditor)}
             />
           </div>
 
           <div className="flex-1">
-            <label className="block text-sm font-semibold mb-2">Upload Lesson Files (optional)</label>
+            <label className="block text-sm font-semibold mb-2">
+              Upload Lesson Files (optional)
+            </label>
             <div className="border border-gray-300 p-4 rounded bg-gray-50">
               <input type="file" multiple onChange={handleFileChange} />
               {files.length > 0 && (

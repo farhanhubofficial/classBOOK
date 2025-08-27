@@ -10,14 +10,8 @@ import {
   getDocs,
 } from "firebase/firestore";
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { TextStyle } from "@tiptap/extension-text-style";
-import { Color } from "@tiptap/extension-color";
-import { Highlight } from "@tiptap/extension-highlight";
-import { FontFamily } from "@tiptap/extension-font-family";
-import { FontSize } from "@tiptap/extension-font-size";
-import TextAlign from "@tiptap/extension-text-align";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 // ---------- Utils ----------
 const randomId = () => Math.random().toString(36).slice(2);
@@ -31,72 +25,8 @@ const toDocId = (str) =>
     .replace(/-+/g, "-");
 
 // ---------- Question Card ----------
-const QuestionCard = ({
-  idx,
-  data,
-  onCancel,
-  onCreateNext,
-  setActiveEditor,
-}) => {
+const QuestionCard = ({ idx, data, onCancel, onCreateNext }) => {
   const [showAnswer, setShowAnswer] = useState(Boolean(data.answerHTML));
-
-  const questionEditor = useEditor({
-    extensions: [
-      StarterKit,
-      TextStyle,
-      Color,
-      Highlight,
-      FontFamily.configure({ types: ["textStyle"] }),
-      FontSize.configure({ types: ["textStyle"] }),
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-    ],
-    content: data.questionHTML || "",
-    editorProps: {
-      attributes: {
-        class:
-          "min-h-[120px] p-3 border border-gray-300 rounded focus:outline-none",
-      },
-    },
-    onUpdate: ({ editor }) => {
-      data.questionHTML = editor.getHTML();
-    },
-  });
-
-  const answerEditor = useEditor({
-    extensions: [
-      StarterKit,
-      TextStyle,
-      Color,
-      Highlight,
-      FontFamily.configure({ types: ["textStyle"] }),
-      FontSize.configure({ types: ["textStyle"] }),
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-    ],
-    content: data.answerHTML || "",
-    editorProps: {
-      attributes: {
-        class:
-          "min-h-[100px] p-3 border border-gray-300 rounded focus:outline-none bg-gray-50",
-      },
-    },
-    onUpdate: ({ editor }) => {
-      data.answerHTML = editor.getHTML();
-    },
-  });
-
-  useEffect(() => {
-    if (!questionEditor) return;
-    const onFocus = () => setActiveEditor(questionEditor);
-    questionEditor.on("focus", onFocus);
-    return () => questionEditor.off("focus", onFocus);
-  }, [questionEditor, setActiveEditor]);
-
-  useEffect(() => {
-    if (!answerEditor) return;
-    const onFocus = () => setActiveEditor(answerEditor);
-    answerEditor.on("focus", onFocus);
-    return () => answerEditor.off("focus", onFocus);
-  }, [answerEditor, setActiveEditor]);
 
   return (
     <div className="border rounded-lg shadow-sm p-4 mb-6">
@@ -109,7 +39,22 @@ const QuestionCard = ({
       <label className="block text-sm font-medium text-gray-700 mb-1">
         Question
       </label>
-      <EditorContent editor={questionEditor} />
+      <ReactQuill
+        theme="snow"
+        value={data.questionHTML}
+        onChange={(val) => (data.questionHTML = val)}
+        className="bg-white border rounded min-h-[120px]"
+        modules={{
+          toolbar: [
+            ["bold", "italic", "underline", "strike"],
+            [{ list: "ordered" }, { list: "bullet" }],
+            [{ align: [] }],
+            [{ color: [] }, { background: [] }],
+            [{ font: [] }, { size: [] }],
+            ["clean"],
+          ],
+        }}
+      />
 
       <button
         onClick={() => setShowAnswer((s) => !s)}
@@ -123,7 +68,22 @@ const QuestionCard = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Answer
           </label>
-          <EditorContent editor={answerEditor} />
+          <ReactQuill
+            theme="snow"
+            value={data.answerHTML}
+            onChange={(val) => (data.answerHTML = val)}
+            className="bg-gray-50 border rounded min-h-[100px]"
+            modules={{
+              toolbar: [
+                ["bold", "italic", "underline", "strike"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                [{ align: [] }],
+                [{ color: [] }, { background: [] }],
+                [{ font: [] }, { size: [] }],
+                ["clean"],
+              ],
+            }}
+          />
         </div>
       )}
 
@@ -141,116 +101,6 @@ const QuestionCard = ({
           Next
         </button>
       </div>
-    </div>
-  );
-};
-
-// ---------- Global Toolbar ----------
-const GlobalToolbar = ({ activeEditor }) => {
-  const run = (fn) => activeEditor && fn(activeEditor);
-
-  const applyColor = (color) =>
-    run((e) => e.chain().focus().setColor(color).run());
-  const applyBgColor = (color) =>
-    run((e) => e.chain().focus().setHighlight({ color }).run());
-
-  return (
-    <div className="flex flex-wrap gap-2 mb-4 border-b pb-3">
-      <button
-        onClick={() => run((e) => e.chain().focus().toggleBold().run())}
-        className="btn"
-      >
-        Bold
-      </button>
-      <button
-        onClick={() => run((e) => e.chain().focus().toggleItalic().run())}
-        className="btn"
-      >
-        Italic
-      </button>
-      <button
-        onClick={() => run((e) => e.chain().focus().toggleStrike().run())}
-        className="btn"
-      >
-        Strike
-      </button>
-      <button
-        onClick={() => run((e) => e.chain().focus().toggleBulletList().run())}
-        className="btn"
-      >
-        • List
-      </button>
-      <button
-        onClick={() => run((e) => e.chain().focus().toggleOrderedList().run())}
-        className="btn"
-      >
-        1. List
-      </button>
-      <button
-        onClick={() => run((e) => e.chain().focus().setTextAlign("left").run())}
-        className="btn"
-      >
-        Left
-      </button>
-      <button
-        onClick={() =>
-          run((e) => e.chain().focus().setTextAlign("center").run())
-        }
-        className="btn"
-      >
-        Center
-      </button>
-      <button
-        onClick={() =>
-          run((e) => e.chain().focus().setTextAlign("right").run())
-        }
-        className="btn"
-      >
-        Right
-      </button>
-      <button
-        onClick={() =>
-          run((e) => e.chain().focus().unsetAllMarks().clearNodes().run())
-        }
-        className="btn"
-      >
-        Clear
-      </button>
-
-      <input
-        type="color"
-        onChange={(e) => applyColor(e.target.value)}
-        title="Text Color"
-      />
-      <input
-        type="color"
-        onChange={(e) => applyBgColor(e.target.value)}
-        title="Background"
-      />
-
-      <select
-        onChange={(e) =>
-          run((ed) => ed.chain().focus().setFontFamily(e.target.value).run())
-        }
-      >
-        <option value="">Font</option>
-        <option value="Arial">Arial</option>
-        <option value="Georgia">Georgia</option>
-        <option value="Tahoma">Tahoma</option>
-        <option value="Courier New">Courier New</option>
-      </select>
-
-      <select
-        onChange={(e) =>
-          run((ed) => ed.chain().focus().setFontSize(e.target.value).run())
-        }
-      >
-        <option value="">Size</option>
-        <option value="12px">12px</option>
-        <option value="16px">16px</option>
-        <option value="20px">20px</option>
-        <option value="24px">24px</option>
-      </select>
     </div>
   );
 };
@@ -273,13 +123,11 @@ const ExamEditor = ({
       order: 0,
     },
   ]);
-  const [activeEditor, setActiveEditor] = useState(null);
   const [isSavingExam, setIsSavingExam] = useState(false);
 
   // Load edit mode content
   useEffect(() => {
     if (examId) {
-      // edit mode
       if (initialQuestions?.length) {
         const qs = initialQuestions.map((q, i) => ({
           localId: randomId(),
@@ -361,7 +209,6 @@ const ExamEditor = ({
       if (examId) {
         examRef = doc(examsPath, examId);
 
-        // update the exam title
         await setDoc(
           examRef,
           {
@@ -371,7 +218,6 @@ const ExamEditor = ({
           { merge: true }
         );
 
-        // delete all existing questions then rewrite
         const questionsPath = collection(examRef, "questions");
         const existing = await getDocs(questionsPath);
         const batchDel = writeBatch(db);
@@ -438,8 +284,6 @@ const ExamEditor = ({
 
   return (
     <div className="bg-white p-4 rounded shadow max-w-4xl mx-auto">
-      <GlobalToolbar activeEditor={activeEditor} />
-
       {/* HEADER */}
       <div className="mb-6 flex flex-col gap-3">
         <div>
@@ -474,7 +318,7 @@ const ExamEditor = ({
             onClick={onClose}
             className="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded"
           >
-          Cancel
+            Cancel
           </button>
         </div>
       </div>
@@ -485,7 +329,6 @@ const ExamEditor = ({
           key={q.localId}
           idx={idx}
           data={q}
-          setActiveEditor={setActiveEditor}
           onCancel={cancelCard}
           onCreateNext={createNextCard}
         />
