@@ -8,8 +8,14 @@ function Lessons() {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [studentClassroom, setStudentClassroom] = useState(null);
-  const [expandedContent, setExpandedContent] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // ✅ Helper to strip HTML tags (for title only)
+  const stripHtml = (html) => {
+    if (!html) return "";
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return doc.body.textContent || "";
+  };
 
   useEffect(() => {
     const fetchLessonsForStudent = async () => {
@@ -56,10 +62,6 @@ function Lessons() {
     fetchLessonsForStudent();
   }, []);
 
-  const toggleContent = (id) => {
-    setExpandedContent((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
   const goPrev = () => {
     setCurrentIndex((prev) => (prev === 0 ? lessons.length - 1 : prev - 1));
   };
@@ -73,7 +75,6 @@ function Lessons() {
   if (lessons.length === 0) return <p className="text-center mt-6">No lessons available for your classroom.</p>;
 
   const lesson = lessons[currentIndex];
-  const isExpanded = expandedContent[lesson.id];
 
   return (
     <div className="p-6 max-w-4xl mx-auto relative">
@@ -92,35 +93,18 @@ function Lessons() {
 
         {/* Lesson card */}
         <div className="border-2 border-blue-300 rounded-2xl p-6 w-full shadow-lg bg-gradient-to-br from-white to-blue-50 transition duration-300 h-[600px] flex flex-col mx-8">
-          {/* ✅ FIXED: render title as HTML with formatting */}
-          <h3
-            className="text-2xl font-semibold text-blue-700 mb-3 text-center"
-            dangerouslySetInnerHTML={{
-              __html: lesson.title || lesson.writtenTitle || lesson.fileTitle || "Untitled Lesson",
-            }}
-          />
+          {/* ✅ Title with HTML stripped */}
+          <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
+            {stripHtml(lesson.title || lesson.writtenTitle || lesson.fileTitle) || "Untitled Lesson"}
+          </h3>
 
           {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto pr-2">
             {lesson.content && (
-              <div className="mb-4 text-gray-700 text-justify">
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: isExpanded
-                      ? lesson.content
-                      : (lesson.content || "").slice(0, 600) +
-                        (lesson.content.length > 600 ? "..." : ""),
-                  }}
-                />
-                {lesson.content?.length > 600 && (
-                  <button
-                    onClick={() => toggleContent(lesson.id)}
-                    className="ml-2 text-blue-500 font-medium hover:underline"
-                  >
-                    {isExpanded ? "See Less" : "See More"}
-                  </button>
-                )}
-              </div>
+              <div
+                className="lesson-content mb-4 text-gray-700 text-justify"
+                dangerouslySetInnerHTML={{ __html: lesson.content }}
+              />
             )}
 
             {lesson.files?.length > 0 && (
@@ -163,12 +147,19 @@ function Lessons() {
         {lessons.map((_, i) => (
           <div
             key={i}
-            className={`w-3 h-3 rounded-full ${
-              i === currentIndex ? "bg-blue-600" : "bg-gray-300"
-            }`}
+            className={`w-3 h-3 rounded-full ${i === currentIndex ? "bg-blue-600" : "bg-gray-300"}`}
           ></div>
         ))}
       </div>
+
+      {/* Extra CSS to fix lists inside content */}
+      <style>
+        {`
+          .lesson-content ul { list-style-type: disc; padding-left: 1.5rem; }
+          .lesson-content ol { list-style-type: decimal; padding-left: 1.5rem; }
+          .lesson-content li { margin-bottom: 0.25rem; }
+        `}
+      </style>
     </div>
   );
 }

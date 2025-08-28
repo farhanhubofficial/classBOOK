@@ -6,6 +6,7 @@ import SettingsPanel from './SettingPanel';
 import CbcHome from './CbcHome';
 import TeacherDashboard from './TeacherDashboard'; // adjust path if needed
 import AccountManagement from './AccountManagement';
+import Footer from './Footer';
 
 import GradeView from './GradeView';
 import SubjectView from './SubjectView';
@@ -73,6 +74,7 @@ const isTeacherRoute = location.pathname.startsWith('/teacher');
 
 // Hide header for any teacher routes
 const showHeader = !isAdminRoute && !isStudentRoute && !isTeacherRoute;
+const showFooter = !isAdminRoute && !isStudentRoute && !isTeacherRoute;
 
 
 useEffect(() => {
@@ -169,7 +171,8 @@ useEffect(() => {
           <Route path="lessons" element={<Lessons />} />
         </Route>
       </Routes>
-    </>
+  {showFooter && <Footer />}    </>
+
   );
 }
 
