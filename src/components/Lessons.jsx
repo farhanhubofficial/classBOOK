@@ -146,12 +146,12 @@ function Lessons() {
       {/* ✅ Mobile View (swipe horizontally) */}
       <div
         ref={scrollRef}
-        className="md:hidden flex overflow-x-auto space-x-4 snap-x snap-mandatory scrollbar-hide"
+        className="md:hidden flex overflow-x-auto space-x-2 snap-x snap-mandatory scrollbar-hide"
       >
         {lessons.map((l, i) => (
           <div
             key={l.id}
-            className="flex-none w-full snap-center border-2 border-blue-300 rounded-2xl p-6 shadow-lg bg-gradient-to-br from-white to-blue-50 h-[600px] flex flex-col"
+            className="flex-none w-full snap-center border-2 border-blue-300 rounded-2xl p-2 shadow-lg bg-gradient-to-br from-white to-blue-50 h-[600px] flex flex-col"
           >
             <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
               {stripHtml(l.title || l.writtenTitle || l.fileTitle) || "Untitled Lesson"}
