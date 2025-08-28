@@ -151,8 +151,7 @@ function Lessons() {
         {lessons.map((l, i) => (
           <div
             key={l.id}
-            className="flex-none w-full snap-center border-2 border-blue-300 rounded-2xl p-6 shadow-lg bg-gradient-to-br from-white to-blue-50 h-[600px] flex flex-col"
-          >
+  className="flex-none w-[90%] mx-auto snap-center border-2 border-blue-300 rounded-2xl p-6 shadow-lg bg-gradient-to-br from-white to-blue-50 h-[600px] flex flex-col"          >
             <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
               {stripHtml(l.title || l.writtenTitle || l.fileTitle) || "Untitled Lesson"}
             </h3>
