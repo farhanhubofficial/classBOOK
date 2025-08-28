@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
 import { getAuth } from "firebase/auth";
@@ -9,6 +9,8 @@ function Lessons() {
   const [loading, setLoading] = useState(true);
   const [studentClassroom, setStudentClassroom] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const scrollRef = useRef(null);
 
   // ✅ Helper to strip HTML tags (for title only)
   const stripHtml = (html) => {
@@ -82,7 +84,8 @@ function Lessons() {
         Lessons for {studentClassroom}
       </h1>
 
-      <div className="relative flex items-center justify-center">
+      {/* ✅ Desktop / Tablet View (buttons + one lesson) */}
+      <div className="relative hidden md:flex items-center justify-center">
         {/* Prev button */}
         <button
           onClick={goPrev}
@@ -91,14 +94,12 @@ function Lessons() {
           <FaChevronLeft className="text-2xl text-blue-600" />
         </button>
 
-        {/* Lesson card */}
+        {/* Single lesson card */}
         <div className="border-2 border-blue-300 rounded-2xl p-6 w-full shadow-lg bg-gradient-to-br from-white to-blue-50 transition duration-300 h-[600px] flex flex-col mx-8">
-          {/* ✅ Title with HTML stripped */}
           <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
             {stripHtml(lesson.title || lesson.writtenTitle || lesson.fileTitle) || "Untitled Lesson"}
           </h3>
 
-          {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto pr-2">
             {lesson.content && (
               <div
@@ -142,8 +143,58 @@ function Lessons() {
         </button>
       </div>
 
-      {/* Dots indicator */}
-      <div className="flex justify-center mt-4 space-x-2">
+      {/* ✅ Mobile View (swipe horizontally) */}
+      <div
+        ref={scrollRef}
+        className="md:hidden flex overflow-x-auto space-x-4 snap-x snap-mandatory scrollbar-hide"
+      >
+        {lessons.map((l, i) => (
+          <div
+            key={l.id}
+            className="flex-none w-full snap-center border-2 border-blue-300 rounded-2xl p-6 shadow-lg bg-gradient-to-br from-white to-blue-50 h-[600px] flex flex-col"
+          >
+            <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
+              {stripHtml(l.title || l.writtenTitle || l.fileTitle) || "Untitled Lesson"}
+            </h3>
+
+            <div className="flex-1 overflow-y-auto pr-2">
+              {l.content && (
+                <div
+                  className="lesson-content mb-4 text-gray-700 text-justify"
+                  dangerouslySetInnerHTML={{ __html: l.content }}
+                />
+              )}
+
+              {l.files?.length > 0 && (
+                <div className="mb-4">
+                  <strong className="block text-gray-800 mb-1">📂 Attached Files:</strong>
+                  <ul className="list-disc list-inside text-gray-600">
+                    {l.files.map((file, i) => (
+                      <li key={i}>
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 underline"
+                        >
+                          {file.name || `File ${i + 1}`}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <p className="text-sm text-gray-500 text-right italic mt-2">
+              📅 Posted on: {l.createdAt.toLocaleString()}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Dots indicator (desktop only) */}
+      <div className="hidden md:flex justify-center mt-4 space-x-2">
         {lessons.map((_, i) => (
           <div
             key={i}
@@ -158,6 +209,8 @@ function Lessons() {
           .lesson-content ul { list-style-type: disc; padding-left: 1.5rem; }
           .lesson-content ol { list-style-type: decimal; padding-left: 1.5rem; }
           .lesson-content li { margin-bottom: 0.25rem; }
+          .scrollbar-hide::-webkit-scrollbar { display: none; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         `}
       </style>
     </div>
