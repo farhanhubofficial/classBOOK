@@ -111,7 +111,7 @@ const StudentDashboard = () => {
           {["english", "Kiswahili Course", "Somali Course", "Arabic Course"].includes(userData?.curriculum) ? (
             <>
               <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lessons")}> <GiSpellBook /> Lessons </button>
-              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lesson-documents")}> <MdDescription /> Lesson Documents </button>
+              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/practical-quizzes")}> <MdDescription /> Practical Quizzes </button>
               <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/crash-courses")}> <FaBolt /> Crash Courses </button>
               <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/assignments")}> <RiFileList3Line /> Assignments </button>
             </>

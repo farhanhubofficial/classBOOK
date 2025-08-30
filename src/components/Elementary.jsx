@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import UploadAssignment from "./UploadAssignment";
 import UploadLesson from "./UploadLesson";
 import AssignmentAnswers from "./ViewSubmittedAssignment"; // Corrected import
+import PracticalQuiz from "./PracticalQuiz";
+
+// add in useState section
 
 import {
   collection,
@@ -40,6 +43,13 @@ function Elementary() {
   const [uploadingLessonFor, setUploadingLessonFor] = useState(null);
   const [viewingSubmissionFor, setViewingSubmissionFor] = useState(null);
   const [expandedRows, setExpandedRows] = useState([]);
+  const [uploadingQuizFor, setUploadingQuizFor] = useState(null);
+
+
+
+  const [uploadingMeetFor, setUploadingMeetFor] = useState(null);
+const [meetLink, setMeetLink] = useState("");
+
 
   const navigate = useNavigate();
 
@@ -382,6 +392,22 @@ function Elementary() {
 >
   Upload Lesson
 </button>
+<button
+  className="bg-purple-600 text-white px-4 py-2 rounded-md mt-4"
+  onClick={() => setUploadingMeetFor(selectedClassroom.name)}
+>
+  Upload Google Meet
+</button>
+<button
+  className="bg-pink-600 text-white px-4 py-2 rounded-md mt-4"
+  onClick={() =>
+    navigate(`/admin/upload-practicalquiz/${selectedClassroom.name}`)
+  }
+>
+  Upload Practical Quiz
+</button>
+
+
 
             </div>
           </div>
@@ -398,6 +424,27 @@ function Elementary() {
           </div>
         </div>
       )}
+
+
+{uploadingQuizFor && (
+  <div
+    className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
+    onClick={handleModalClose}
+  >
+    <div
+      className="bg-white p-8 rounded-lg shadow-lg max-w-6xl w-full"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <PracticalQuiz
+        classroomName={uploadingQuizFor}
+        onClose={() => setUploadingQuizFor(null)}
+      />
+    </div>
+  </div>
+)}
+
+
+
 
       {uploadingAssignmentFor && (
         <div
@@ -564,6 +611,80 @@ function Elementary() {
             Save
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{uploadingMeetFor && (
+  <div
+    className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center modal-overlay"
+    onClick={handleModalClose}
+  >
+    <div
+      className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md"
+      onClick={(e) => e.stopPropagation()} // prevent closing modal on inside click
+    >
+      <h2 className="text-xl font-bold mb-4">Paste Google Meet Link</h2>
+      <input
+        type="url"
+        placeholder="https://meet.google.com/..."
+        value={meetLink}
+        onChange={(e) => setMeetLink(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded mb-4"
+      />
+      <div className="flex justify-end space-x-3">
+        <button
+          className="bg-gray-300 px-4 py-2 rounded"
+          onClick={() => {
+            setUploadingMeetFor(null);
+            setMeetLink("");
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={async () => {
+            if (!meetLink) {
+              alert("Please paste a valid Google Meet link");
+              return;
+            }
+
+            try {
+              // 1. Save meet link to Firestore under classroom
+              const classroomRef = doc(
+                db,
+                "englishLevels",
+                level,
+                "subClassrooms",
+                uploadingMeetFor
+              );
+              await updateDoc(classroomRef, { meetLink });
+
+              // 2. Update all students in this classroom with the same Google Meet link
+              const classroomStudents = students.filter(
+                (s) => s.classroom === uploadingMeetFor
+              );
+
+              await Promise.all(
+                classroomStudents.map(async (student) => {
+                  const studentRef = doc(db, "users", student.id);
+                  await updateDoc(studentRef, { googleMeet: meetLink });
+                })
+              );
+
+              alert("Google Meet link uploaded and synced with students!");
+              setUploadingMeetFor(null);
+              setMeetLink("");
+            } catch (error) {
+              console.error("Error saving Google Meet link:", error);
+              alert("Failed to upload Google Meet link. Try again.");
+            }
+          }}
+        >
+          Save
+        </button>
       </div>
     </div>
   </div>

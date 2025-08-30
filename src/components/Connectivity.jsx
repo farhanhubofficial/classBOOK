@@ -16,6 +16,7 @@ import TopicView from './TopicView';
 import StudentGradeView from './StudentGradeView';
 import StudentSubjectView from './StudentSubjectView';
 import StudentTopicView from './StudentTopicView';
+import StudentPracticalQuizzes from './StudentPracticalQuizzes';
 
 
 import Header from './Header';
@@ -62,6 +63,7 @@ import TeacherCbc from './TeacherCbc';
 
 
 import TrDashboard from './TrDashboard';
+import PracticalQuiz from './PracticalQuiz';
 
 function Connectivity() {
   const location = useLocation();
@@ -140,6 +142,16 @@ useEffect(() => {
   <Route path="view-assignments/:classroomName" element={<ViewSubmittedAssignment />} />
     <Route path="upload-assignments/:classroomName" element={<UploadAssignment />} />
     <Route path="upload-lesson/:classroomName" element={<UploadLesson />} />
+     <Route path="upload-practicalquiz/:classroomName" element={<PracticalQuiz />} />
+
+
+
+
+
+
+
+
+
 
 
 
@@ -169,6 +181,7 @@ useEffect(() => {
           <Route path="assignments" element={<StudentAssignments />} />
           <Route path="settings" element={<div>Student Settings Page</div>} />
           <Route path="lessons" element={<Lessons />} />
+          <Route path='practical-quizzes' element = {<StudentPracticalQuizzes/>}/>
         </Route>
       </Routes>
   {showFooter && <Footer />}    </>
