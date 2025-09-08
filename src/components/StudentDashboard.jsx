@@ -90,12 +90,21 @@ const StudentDashboard = () => {
         <div className="flex items-center gap-2 text-green-600 text-2xl font-bold">
           <GiSpellBook /> classBOOK
         </div>
+
+        {/* --- Sidebar user profile --- */}
         <div className="mt-5 text-center">
           {userData?.photoURL ? (
-            <img src={userData.photoURL} alt="Profile" className="w-20 h-20 rounded-full mx-auto object-cover cursor-pointer" onClick={() => setIsSettingsModalOpen(true)}
-/>
+            <img
+              src={userData.photoURL}
+              alt="Profile"
+              className="w-20 h-20 rounded-full mx-auto object-cover cursor-pointer hover:ring-4 hover:ring-green-300"
+              onClick={() => setIsSettingsModalOpen(true)}
+            />
           ) : (
-            <FaUserCircle className="text-5xl mx-auto text-gray-500" />
+            <FaUserCircle
+              className="text-7xl mx-auto text-gray-500 cursor-pointer hover:text-green-600"
+              onClick={() => setIsSettingsModalOpen(true)}
+            />
           )}
           <h2 className="text-lg font-semibold mt-2">
             {userData ? `${userData.firstName} ${userData.lastName}` : "Loading..."}
@@ -104,6 +113,7 @@ const StudentDashboard = () => {
           <p className="text-sm text-gray-600 uppercase font-bold">{userData?.curriculum}</p>
           <p className="text-sm text-gray-600 lowercase font-semibold">{userData?.classroom}</p>
         </div>
+
         <nav className="mt-10 space-y-3 pb-10">
           <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/dashboard")}> <FaUserCircle /> Dashboard </button>
           <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/settings")}> <FiSettings /> Settings </button>
@@ -137,16 +147,20 @@ const StudentDashboard = () => {
               <FaSearch className="text-2xl text-gray-500 cursor-pointer lg:hidden" onClick={() => setIsSearchOpen((prev) => !prev)} />
             </div>
 
+            {/* --- Top navbar user icon --- */}
             <div className="flex items-center gap-3">
               {userData?.photoURL ? (
                 <img
                   src={userData.photoURL}
                   alt="User"
-                  className="w-12 h-12 rounded-full object-cover cursor-pointer"
+                  className="w-12 h-12 rounded-full object-cover cursor-pointer hover:ring-4 hover:ring-green-300"
                   onClick={() => setIsSettingsModalOpen(true)}
                 />
               ) : (
-                <FaUserCircle className="text-5xl text-gray-500 cursor-pointer" onClick={() => setIsSettingsModalOpen(true)} />
+                <FaUserCircle
+                  className="text-5xl text-gray-500 cursor-pointer hover:text-green-600"
+                  onClick={() => setIsSettingsModalOpen(true)}
+                />
               )}
               <div>
                 <p className="text-sm text-gray-700">{userData?.firstName || "Loading..."} {userData?.lastName || ""}</p>
@@ -172,7 +186,7 @@ const StudentDashboard = () => {
         <AccountSettingsModal
           onClose={() => setIsSettingsModalOpen(false)}
           userData={userData}
-          refreshUser={refreshUser} // ✅ Fix: Now passed correctly
+          refreshUser={refreshUser} // ✅ passed correctly
         />
       )}
     </div>

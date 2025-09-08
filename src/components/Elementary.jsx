@@ -406,6 +406,14 @@ const [meetLink, setMeetLink] = useState("");
 >
   Upload Practical Quiz
 </button>
+<button
+  className="bg-pink-600 text-white px-4 py-2 rounded-md mt-4"
+  onClick={() =>
+    navigate(`/admin/upload-english-final-exam/${selectedClassroom.name}`)
+  }
+>
+  Upload Final Exam 
+</button>
 
 
 

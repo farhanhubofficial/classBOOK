@@ -7,23 +7,17 @@ import CbcHome from './CbcHome';
 import TeacherDashboard from './TeacherDashboard'; // adjust path if needed
 import AccountManagement from './AccountManagement';
 import Footer from './Footer';
-
 import GradeView from './GradeView';
 import SubjectView from './SubjectView';
 import TopicView from './TopicView';
-
-
 import StudentGradeView from './StudentGradeView';
 import StudentSubjectView from './StudentSubjectView';
 import StudentTopicView from './StudentTopicView';
 import StudentPracticalQuizzes from './StudentPracticalQuizzes';
-
-
 import Header from './Header';
 import Home from './Home';
 import Login from './Login';
 import SignUp from './Signup';
-
 import Elementary from './Elementary';
 import Advanced from './Advanced';
 import Proficiency from './Proficiency';
@@ -33,10 +27,8 @@ import SomaliElementary from './SomaliElementary';
 import SomaliAdvanced from './SomaliAdvanced';
 import Intermediate from './Intermediate';
 import UpperIntermediate from './UpperIntermediate';
-
 import StudentDashboard from './StudentDashboard';
 import LearnersDashboard from './LearnerDashboard';
-
 import AdminDashboard from './AdminDashboard';
 import DashboardHome from './DashboardHome';
 import Somali from './Somali';
@@ -44,8 +36,6 @@ import Arabic from './Arabic';
 import Kiswahili from './Kiswahili';
 import Students from './Students';
 import PaymentStatus from './PaymentStatus';
-
-import StudentSubjects from './StudentSubjects';
 import SubjectVideos from './SubjectVideos';
 import Lessons from './Lessons';
 import EnglishClass from './EnglishClass';
@@ -64,7 +54,7 @@ import TeacherCbc from './TeacherCbc';
 
 import TrDashboard from './TrDashboard';
 import PracticalQuiz from './PracticalQuiz';
-
+import EnglishFinalExamEditor from './EnglishFinalExamEditor';
 function Connectivity() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -143,20 +133,7 @@ useEffect(() => {
     <Route path="upload-assignments/:classroomName" element={<UploadAssignment />} />
     <Route path="upload-lesson/:classroomName" element={<UploadLesson />} />
      <Route path="upload-practicalquiz/:classroomName" element={<PracticalQuiz />} />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      <Route path="upload-english-final-exam/:classroomName" element={<EnglishFinalExamEditor />} />
 {/* teachers route  */}
         </Route>
 
@@ -164,12 +141,6 @@ useEffect(() => {
   <Route path='dashboard' element = {<TrDashboard/>}/>
   <Route path='curriculum/cbc' element = {<TeacherCbc/>}/>
  </Route>
-
-
-
-
-
-
         {/* Student Routes */}
         <Route path="/students" element={<StudentDashboard />}>
           <Route path="dashboard" element={<LearnersDashboard />} />
