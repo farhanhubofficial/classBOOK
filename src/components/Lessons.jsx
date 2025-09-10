@@ -95,7 +95,7 @@ function Lessons() {
         </button>
 
         {/* Single lesson card */}
-        <div className="border-2 border-blue-300 rounded-2xl p-6 w-full shadow-lg bg-gradient-to-br from-white to-blue-50 transition duration-300 h-[700px] flex flex-col mx-8">
+<div className="border-2 border-blue-300 rounded-2xl p-6 w-full shadow-lg bg-gradient-to-br from-white to-blue-50 transition duration-300 h-[800px] md:h-[650px] flex flex-col mx-4 sm:mx-6 md:mx-8">
           <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
             {stripHtml(lesson.title || lesson.writtenTitle || lesson.fileTitle) || "Untitled Lesson"}
           </h3>
