@@ -144,55 +144,54 @@ function Lessons() {
       </div>
 
       {/* ✅ Mobile View (swipe horizontally) */}
-     <div
-  ref={scrollRef}
-  className="md:hidden flex overflow-x-auto space-x-2 snap-x snap-mandatory scrollbar-hide"
->
-  {lessons.map((l, i) => (
-    <div
-      key={l.id}
-      className="flex-none w-[95%] mx-auto snap-center border-2 border-blue-300 rounded-2xl p-4 shadow-lg bg-gradient-to-br from-white to-blue-50 h-[700px] flex flex-col"
-    >
-      <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
-        {stripHtml(l.title || l.writtenTitle || l.fileTitle) || "Untitled Lesson"}
-      </h3>
-
-      <div className="flex-1 overflow-y-auto pr-2">
-        {l.content && (
+      <div
+        ref={scrollRef}
+        className="md:hidden flex overflow-x-auto space-x-2 snap-x snap-mandatory scrollbar-hide"
+      >
+        {lessons.map((l, i) => (
           <div
-            className="lesson-content mb-4 text-gray-700 text-justify"
-            dangerouslySetInnerHTML={{ __html: l.content }}
-          />
-        )}
+            key={l.id}
+            className="flex-none w-full snap-center border-2 border-blue-300 rounded-2xl p-2 shadow-lg bg-gradient-to-br from-white to-blue-50 h-[600px] flex flex-col"
+          >
+            <h3 className="text-2xl font-semibold text-blue-700 mb-3 text-center">
+              {stripHtml(l.title || l.writtenTitle || l.fileTitle) || "Untitled Lesson"}
+            </h3>
 
-        {l.files?.length > 0 && (
-          <div className="mb-4">
-            <strong className="block text-gray-800 mb-1">📂 Attached Files:</strong>
-            <ul className="list-disc list-inside text-gray-600">
-              {l.files.map((file, i) => (
-                <li key={i}>
-                  <a
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 underline"
-                  >
-                    {file.name || `File ${i + 1}`}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <div className="flex-1 overflow-y-auto pr-2">
+              {l.content && (
+                <div
+                  className="lesson-content mb-4 text-gray-700 text-justify"
+                  dangerouslySetInnerHTML={{ __html: l.content }}
+                />
+              )}
+
+              {l.files?.length > 0 && (
+                <div className="mb-4">
+                  <strong className="block text-gray-800 mb-1">📂 Attached Files:</strong>
+                  <ul className="list-disc list-inside text-gray-600">
+                    {l.files.map((file, i) => (
+                      <li key={i}>
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 underline"
+                        >
+                          {file.name || `File ${i + 1}`}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <p className="text-sm text-gray-500 text-right italic mt-2">
+              📅 Posted on: {l.createdAt.toLocaleString()}
+            </p>
           </div>
-        )}
+        ))}
       </div>
-
-      <p className="text-sm text-gray-500 text-right italic mt-2">
-        📅 Posted on: {l.createdAt.toLocaleString()}
-      </p>
-    </div>
-  ))}
-</div>
-
 
       {/* Dots indicator (desktop only) */}
       <div className="hidden md:flex justify-center mt-4 space-x-2">
