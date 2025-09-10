@@ -115,23 +115,89 @@ const StudentDashboard = () => {
         </div>
 
         <nav className="mt-10 space-y-3 pb-10">
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/dashboard")}> <FaUserCircle /> Dashboard </button>
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/student/settings")}> <FiSettings /> Settings </button>
+          <button
+            className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"
+            onClick={() => {
+              navigate("/students/dashboard");
+              setIsSidebarOpen(false); // ✅ closes sidebar
+            }}
+          >
+            <FaUserCircle /> Dashboard
+          </button>
+
+          <button
+            className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"
+            onClick={() => {
+              navigate("/student/settings");
+              setIsSidebarOpen(false); // ✅ closes sidebar
+            }}
+          >
+            <FiSettings /> Settings
+          </button>
 
           {["english", "Kiswahili Course", "Somali Course", "Arabic Course"].includes(userData?.curriculum) ? (
             <>
-              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/lessons")}> <GiSpellBook /> Lessons </button>
-              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/practical-quizzes")}> <MdDescription /> Practical Quizzes </button>
-              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/studentdashboard/crash-courses")}> <FaBolt /> Crash Courses </button>
-              <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/assignments")}> <RiFileList3Line /> Assignments </button>
+              <button
+                className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"
+                onClick={() => {
+                  navigate("/students/lessons");
+                  setIsSidebarOpen(false); // ✅ closes sidebar
+                }}
+              >
+                <GiSpellBook /> Lessons
+              </button>
+              <button
+                className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"
+                onClick={() => {
+                  navigate("/students/practical-quizzes");
+                  setIsSidebarOpen(false); // ✅ closes sidebar
+                }}
+              >
+                <MdDescription /> Practical Quizzes
+              </button>
+              <button
+                className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"
+                onClick={() => {
+                  navigate("/studentdashboard/crash-courses");
+                  setIsSidebarOpen(false); // ✅ closes sidebar
+                }}
+              >
+                <FaBolt /> Crash Courses
+              </button>
+              <button
+                className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"
+                onClick={() => {
+                  navigate("/students/assignments");
+                  setIsSidebarOpen(false); // ✅ closes sidebar
+                }}
+              >
+                <RiFileList3Line /> Assignments
+              </button>
             </>
           ) : (
-            <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100" onClick={() => navigate("/students/subjects")}> <MdSubject /> Subjects </button>
+            <button
+              className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"
+              onClick={() => {
+                navigate("/students/subjects");
+                setIsSidebarOpen(false); // ✅ closes sidebar
+              }}
+            >
+              <MdSubject /> Subjects
+            </button>
           )}
 
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"> <MdAssessment /> Exam Reports </button>
-          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100"> <MdAssessment /> Exams </button>
-          <button onClick={handleLogout} className="flex items-center gap-2 p-2 text-red-600 rounded-md hover:bg-red-100"> <MdExitToApp /> Log out </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
+            <MdAssessment /> Exam Reports
+          </button>
+          <button className="flex items-center gap-2 p-2 rounded-md hover:bg-green-100">
+            <MdAssessment /> Exams
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 p-2 text-red-600 rounded-md hover:bg-red-100"
+          >
+            <MdExitToApp /> Log out
+          </button>
         </nav>
       </aside>
 
@@ -144,7 +210,10 @@ const StudentDashboard = () => {
                 <FaSearch className="text-gray-500 mr-2" />
                 <input type="text" placeholder="Search" className="w-full outline-none bg-transparent" />
               </div>
-              <FaSearch className="text-2xl text-gray-500 cursor-pointer lg:hidden" onClick={() => setIsSearchOpen((prev) => !prev)} />
+              <FaSearch
+                className="text-2xl text-gray-500 cursor-pointer lg:hidden"
+                onClick={() => setIsSearchOpen((prev) => !prev)}
+              />
             </div>
 
             {/* --- Top navbar user icon --- */}
@@ -163,7 +232,9 @@ const StudentDashboard = () => {
                 />
               )}
               <div>
-                <p className="text-sm text-gray-700">{userData?.firstName || "Loading..."} {userData?.lastName || ""}</p>
+                <p className="text-sm text-gray-700">
+                  {userData?.firstName || "Loading..."} {userData?.lastName || ""}
+                </p>
                 <p className="text-xs text-gray-500">{userData?.grade}</p>
               </div>
             </div>
