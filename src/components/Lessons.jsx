@@ -79,7 +79,7 @@ function Lessons() {
   const lesson = lessons[currentIndex];
 
   return (
-    <div className="p-6 max-w-4xl mx-auto relative min-h-[110vh] md:min-h-0">
+<div className="p-4 w-full md:max-w-4xl md:mx-auto relative min-h-[110vh] md:min-h-0">
       <h1 className="text-3xl font-bold mb-6 text-center text-blue-800 drop-shadow">
         Lessons for {studentClassroom}
       </h1>
