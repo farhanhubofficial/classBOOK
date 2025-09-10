@@ -80,9 +80,10 @@ function Lessons() {
 
   return (
 <div className="p-4 w-full md:max-w-4xl md:mx-auto relative min-h-[110vh] md:min-h-0">
-      <h1 className="text-3xl font-bold mb-6 text-center text-blue-800 drop-shadow">
-        Lessons for {studentClassroom}
-      </h1>
+ <h1 className="text-xl sm:text-3xl  font-semibold mb-6 text-center text-blue-800 drop-shadow">
+  Lessons for {studentClassroom}
+</h1>
+
 
       {/* ✅ Desktop / Tablet View (buttons + one lesson) */}
       <div className="relative hidden md:flex items-center justify-center">
