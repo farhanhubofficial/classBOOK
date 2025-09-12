@@ -169,7 +169,9 @@ function LearnerDashboard() {
                 placeholder="Find your Google Meet link here..."
                 value={googleMeetLink}
                 onChange={(e) => setGoogleMeetLink(e.target.value)}
+                 readOnly
               />
+              
               {typeof googleMeetLink === "string" &&
                 googleMeetLink.includes("https://meet.google.com") && (
                   <div className="mt-2">

@@ -26,7 +26,7 @@ function Login() {
 
         // ✅ Save login time
         await updateDoc(userDocRef, {
-          lastLogin: new Date()
+          lastLogin: new Date(),
         });
 
         // Navigate based on role
@@ -35,7 +35,7 @@ function Login() {
         } else if (userData.role === "admin") {
           navigate("/admin/dashboard");
         } else if (userData.role === "teacher") {
-             navigate("/teacher/dashboard");
+          navigate("/teacher/dashboard");
         } else {
           navigate("/");
         }
@@ -62,7 +62,8 @@ function Login() {
           } else if (userData.role === "admin") {
             navigate("/admin");
           } else if (userData.role === "teacher") {
-       navigate("/teacher/dashboard");          } else {
+            navigate("/teacher/dashboard");
+          } else {
             navigate("/");
           }
         }
@@ -73,8 +74,18 @@ function Login() {
   }, [navigate]);
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+    <div className="relative bg-gray-100 min-h-screen flex justify-center items-center">
+      {/* Shadow backdrop - covers whole page */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-40 z-40"
+        onClick={() => navigate("/")}
+      ></div>
+
+      {/* White login box stays in its normal flow (between header & footer) */}
+      <div
+        className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md z-50 relative"
+        onClick={(e) => e.stopPropagation()} // prevent backdrop click
+      >
         <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-4">
@@ -101,6 +112,17 @@ function Login() {
             Login
           </button>
         </form>
+
+        {/* Sign up link below login button */}
+        <p className="text-center text-sm mt-4">
+          Don&apos;t have an account?{" "}
+          <span
+            onClick={() => navigate("/signup")}
+            className="text-indigo-600 cursor-pointer hover:underline"
+          >
+            Sign Up
+          </span>
+        </p>
       </div>
     </div>
   );
