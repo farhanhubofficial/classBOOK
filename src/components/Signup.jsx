@@ -3,21 +3,26 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc, collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../firebase-config";
+import countries from "../components/countries.json"; // ✅ add this
+
 
 function Signup() {
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    firstName: "",
-    lastName: "",
-    category: "",
-    curriculum: "",
-    grade: "",
-    selectedCurricula: [],
-    gradesByCurriculum: {},
-    gradesByCurriculumSubjects: {},
-  });
+  email: "",
+  password: "",
+  confirmPassword: "",
+  firstName: "",
+  lastName: "",
+  category: "",
+  curriculum: "",
+  grade: "",
+  selectedCurricula: [],
+  gradesByCurriculum: {},
+  gradesByCurriculumSubjects: {},
+  country: "",   // ✅ new
+  phone: "",     // ✅ new
+});
+
   const [error, setError] = useState("");
   const [subjects, setSubjects] = useState({});
   const navigate = useNavigate();
@@ -102,6 +107,8 @@ function Signup() {
     });
   };
 
+
+  const [showCountries, setShowCountries] = useState(false);
   const handleGradeSelect = (curriculum, selectedGrades) => {
     setFormData((prev) => ({
       ...prev,
@@ -153,28 +160,32 @@ function Signup() {
       const userDocRef = doc(db, "users", user.uid);
       const role = formData.category;
 
-      await setDoc(userDocRef, {
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        role,
-        category: formData.category,
-        curriculum:
-          role === "teacher"
-            ? formData.selectedCurricula
-            : formData.curriculum || null,
-        grade:
-          role === "teacher"
-            ? formData.gradesByCurriculum
-            : formData.grade || null,
-        subjects:
-          role === "teacher" ? formData.gradesByCurriculumSubjects || {} : null,
-        daysPresent: 0,
-        daysAbsent: 0,
-        courseDuration: 0,
-        dateRegistered: new Date(),
-        lastLogin: new Date(),
-      });
+   await setDoc(userDocRef, {
+  email: formData.email,
+  firstName: formData.firstName,
+  lastName: formData.lastName,
+  role,
+  category: formData.category,
+  curriculum:
+    role === "teacher"
+      ? formData.selectedCurricula
+      : formData.curriculum || null,
+  grade:
+    role === "teacher"
+      ? formData.gradesByCurriculum
+      : formData.grade || null,
+  subjects: role === "teacher" ? formData.gradesByCurriculumSubjects || {} : null,
+  country: formData.country, // ✅ save country
+phone:
+    (countries.find((c) => c.name === formData.country)?.dial_code || "") +
+    formData.phone,   // ✅ save phone
+  daysPresent: 0,
+  daysAbsent: 0,
+  courseDuration: 0,
+  dateRegistered: new Date(),
+  lastLogin: new Date(),
+});
+
 
       if (role === "admin") {
         navigate("/admin");
@@ -290,6 +301,60 @@ function Signup() {
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
 
+
+{/* ✅ Country with Searchable Dropdown */}
+<div className="relative">
+  <input
+    type="text"
+    placeholder="Search country..."
+    value={formData.country}
+    onFocus={() => setShowCountries(true)} // open on focus
+    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+    required
+    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+  />
+
+  {showCountries && (
+    <div className="absolute z-10 w-full max-h-40 overflow-y-auto bg-white border rounded-lg shadow">
+      {countries
+        .filter((c) =>
+          c.name.toLowerCase().includes(formData.country.toLowerCase())
+        )
+        .map((c) => (
+          <div
+            key={c.name}
+            onClick={() => {
+              setFormData({ ...formData, country: c.name });
+              setShowCountries(false); // ✅ close after selecting
+            }}
+            className="px-4 py-2 cursor-pointer hover:bg-indigo-100"
+          >
+            {c.name}
+          </div>
+        ))}
+    </div>
+  )}
+</div>
+
+<div className="flex space-x-2">
+  <input
+    type="text"
+    readOnly
+    value={countries.find((c) => c.name === formData.country)?.dial_code || ""}
+    className="w-20 px-3 py-2 border rounded-lg bg-gray-100"
+  />
+  <input
+    type="tel"
+    name="phone"
+    placeholder="Phone number"
+    value={formData.phone}
+    onChange={handleChange}
+    required
+    className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+  />
+</div>
+
+
           <select
             name="category"
             value={formData.category}
@@ -302,6 +367,7 @@ function Signup() {
             <option value="learner">Learner</option>
             <option value="parent">Parent</option>
           </select>
+
 
           {formData.category === "learner" && (
             <>
