@@ -50,6 +50,7 @@ import UsersPanel from './UsersPanel';
 import StaffManagement from './StaffManagement'; 
 
 import TeacherCbc from './TeacherCbc';
+import UserInfo from './UserInfo';
 
 
 import TrDashboard from './TrDashboard';
@@ -92,7 +93,7 @@ useEffect(() => {
       {showHeader && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
-
+ <Route path="/userinfo" element={<UserInfo />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
 

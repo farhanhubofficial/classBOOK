@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../firebase-config";
-import UserInfo from "./UserInfo";
 
 const UsersPanel = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState("all");
@@ -18,9 +17,6 @@ const UsersPanel = ({ onClose }) => {
   const [showStudentsPopup, setShowStudentsPopup] = useState(false);
   const [studentUsers, setStudentUsers] = useState([]);
   const [selectedCurriculum, setSelectedCurriculum] = useState(null);
-
-  const [showUserModal, setShowUserModal] = useState(false);
-const [selectedUserId, setSelectedUserId] = useState(null);
 
   // ✅ new states for teacher/parent/staff
   const [teacherUsers, setTeacherUsers] = useState([]);
@@ -155,42 +151,33 @@ const [selectedUserId, setSelectedUserId] = useState(null);
         </thead>
         <tbody>
           {data.map((user) => (
-          <tr
-  key={user.id}
-  className="border-t cursor-pointer hover:bg-gray-100"
-  onClick={() => {
-    setSelectedUserId(user.id);
-    setShowUserModal(true);
-  }}
->
-  <td className="px-4 py-2">{`${user.firstName || ""} ${user.lastName || ""}`}</td>
-  <td className="px-4 py-2">{user.phone || "-"}</td>
-  <td className="px-4 py-2">{user.email || "-"}</td>
-  <td className="px-4 py-2">{user.role || "-"}</td>
-  <td className="px-4 py-2">{user.country || "-"}</td>
-  <td className="px-4 py-2">
-    {user.dateRegistered
-      ? typeof user.dateRegistered === "string"
-        ? new Date(user.dateRegistered).toLocaleString()
-        : user.dateRegistered.seconds
-        ? new Date(user.dateRegistered.seconds * 1000).toLocaleString()
-        : "-"
-      : "-"}
-  </td>
-  <td className="px-4 py-2">
-    <button
-      onClick={(e) => {
-        e.stopPropagation(); // prevent row click
-        setUserToDelete(user);
-        setShowConfirmDelete(true);
-      }}
-      className="bg-red-100 text-red-700 font-medium px-3 py-1 rounded shadow-sm transition-all hover:bg-red-600 hover:text-white"
-    >
-      Delete
-    </button>
-  </td>
-</tr>
-
+            <tr key={user.id} className="border-t">
+              <td className="px-4 py-2">{`${user.firstName || ""} ${user.lastName || ""}`}</td>
+              <td className="px-4 py-2">{user.phone || "-"}</td>
+              <td className="px-4 py-2">{user.email || "-"}</td>
+              <td className="px-4 py-2">{user.role || "-"}</td>
+              <td className="px-4 py-2">{user.country || "-"}</td>
+              <td className="px-4 py-2">
+                {user.dateRegistered
+                  ? typeof user.dateRegistered === "string"
+                    ? new Date(user.dateRegistered).toLocaleString()
+                    : user.dateRegistered.seconds
+                    ? new Date(user.dateRegistered.seconds * 1000).toLocaleString()
+                    : "-"
+                  : "-"}
+              </td>
+              <td className="px-4 py-2">
+                <button
+                  onClick={() => {
+                    setUserToDelete(user);
+                    setShowConfirmDelete(true);
+                  }}
+                  className="bg-red-100 text-red-700 font-medium px-3 py-1 rounded shadow-sm transition-all transform hover:scale-105 hover:bg-red-600 hover:text-white duration-200"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
           ))}
           {data.length === 0 && (
             <tr>
@@ -514,23 +501,6 @@ const [selectedUserId, setSelectedUserId] = useState(null);
             </div>
           </div>
         )}
-
-
-        {showUserModal && selectedUserId && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 w-[90%] max-w-2xl relative">
-      <button
-        onClick={() => setShowUserModal(false)}
-        className="absolute top-3 right-3 text-gray-600 hover:text-gray-900"
-      >
-        ✖
-      </button>
-      {/* 🔹 Load UserInfo dynamically */}
-      <UserInfo userId={selectedUserId} onClose={() => setShowUserModal(false)} />
-    </div>
-  </div>
-)}
-
       </div>
   );
 };
