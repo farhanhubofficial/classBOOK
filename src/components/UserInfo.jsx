@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { db } from "../firebase-config"; 
+import { db } from "../firebase-config";
 import { useParams, useNavigate } from "react-router-dom";
 
 function UserInfo({ userId: propUserId, onClose }) {
@@ -12,25 +12,31 @@ function UserInfo({ userId: propUserId, onClose }) {
 
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [confirmDelete, setConfirmDelete] = useState(false); // 🔹 For delete confirmation
 
   // 🔹 Fetch user
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!userId) return;
-      try {
-        const ref = doc(db, "users", userId);
-        const snapshot = await getDoc(ref);
-        if (snapshot.exists()) {
-          setUserData(snapshot.data());
-        } else {
-          console.log("No user found");
-        }
-      } catch (err) {
-        console.error("Error fetching user:", err);
-      } finally {
-        setLoading(false);
+  const fetchUser = async () => {
+    if (!userId) return;
+    try {
+      const ref = doc(db, "users", userId);
+      const snapshot = await getDoc(ref);
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        setUserData(data);
+        setEditForm(data); // preload edit form
+      } else {
+        console.log("No user found");
       }
-    };
+    } catch (err) {
+      console.error("Error fetching user:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUser();
   }, [userId]);
 
@@ -59,9 +65,22 @@ function UserInfo({ userId: propUserId, onClose }) {
     }
   };
 
-  // 🔹 Edit user
-  const editUser = () => {
-    navigate(`/users/${userId}/edit`);
+  // 🔹 Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // 🔹 Save changes
+  const saveChanges = async () => {
+    try {
+      const ref = doc(db, "users", userId);
+      await updateDoc(ref, editForm);
+      setUserData(editForm);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error saving user:", err);
+    }
   };
 
   if (loading) return <p>Loading...</p>;
@@ -96,35 +115,104 @@ function UserInfo({ userId: propUserId, onClose }) {
       )}
 
       {/* Basic Info */}
-      <h2 className="text-xl font-bold text-center mb-2">{finalName}</h2>
-      <p className="text-center text-gray-600 mb-1">{userData.email}</p>
-      <p className="text-center text-sm text-gray-500 mb-4">
-        Role: {userData.role || "N/A"}
-      </p>
+      {!isEditing ? (
+        <>
+          <h2 className="text-xl font-bold text-center mb-2">{finalName}</h2>
+          <p className="text-center text-gray-600 mb-1">{userData.email}</p>
+          <p className="text-center text-sm text-gray-500 mb-4">
+            Role: {userData.role || "N/A"}
+          </p>
 
-      {/* Dynamic fields */}
-      <div className="space-y-1 text-sm text-gray-700">
-        {Object.entries(userData).map(([key, value]) => {
-          if (
-            [
-              "firstName",
-              "lastName",
-              "fullName",
-              "email",
-              "role",
-              "profilePicture",
-              "isActive",
-            ].includes(key)
-          )
-            return null;
-          return (
-            <p key={key}>
-              <span className="font-semibold capitalize">{key}:</span>{" "}
-              {String(value)}
-            </p>
-          );
-        })}
-      </div>
+          {/* Dynamic fields */}
+          <div className="space-y-1 text-sm text-gray-700">
+            {Object.entries(userData).map(([key, value]) => {
+              if (
+                [
+                  "firstName",
+                  "lastName",
+                  "fullName",
+                  "email",
+                  "role",
+                  "profilePicture",
+                  "isActive",
+                ].includes(key)
+              )
+                return null;
+              return (
+                <p key={key}>
+                  <span className="font-semibold capitalize">{key}:</span>{" "}
+                  {String(value)}
+                </p>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Editable fields */}
+          <div className="space-y-3">
+            <input
+              type="text"
+              name="firstName"
+              value={editForm.firstName || ""}
+              onChange={handleChange}
+              placeholder="First Name"
+              className="w-full border rounded-lg p-2"
+            />
+            <input
+              type="text"
+              name="lastName"
+              value={editForm.lastName || ""}
+              onChange={handleChange}
+              placeholder="Last Name"
+              className="w-full border rounded-lg p-2"
+            />
+            <input
+              type="email"
+              name="email"
+              value={editForm.email || ""}
+              onChange={handleChange}
+              placeholder="Email"
+              className="w-full border rounded-lg p-2"
+            />
+            <input
+              type="text"
+              name="role"
+              value={editForm.role || ""}
+              onChange={handleChange}
+              placeholder="Role"
+              className="w-full border rounded-lg p-2"
+            />
+
+            {/* Extra dynamic fields */}
+            {Object.entries(editForm).map(([key, value]) => {
+              if (
+                [
+                  "firstName",
+                  "lastName",
+                  "fullName",
+                  "email",
+                  "role",
+                  "profilePicture",
+                  "isActive",
+                ].includes(key)
+              )
+                return null;
+              return (
+                <input
+                  key={key}
+                  type="text"
+                  name={key}
+                  value={value}
+                  onChange={handleChange}
+                  placeholder={key}
+                  className="w-full border rounded-lg p-2"
+                />
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* Active status */}
       <p
@@ -136,28 +224,71 @@ function UserInfo({ userId: propUserId, onClose }) {
       </p>
 
       {/* Actions */}
-      <div className="flex justify-center gap-3 mt-6">
-        <button
-          onClick={editUser}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-        >
-          Edit
-        </button>
-        <button
-          onClick={deleteUser}
-          className="px-4 py-2 bg-red-500 text-white rounded-lg"
-        >
-          Delete
-        </button>
-        <button
-          onClick={toggleActive}
-          className={`px-4 py-2 text-white rounded-lg ${
-            userData.isActive ? "bg-yellow-500" : "bg-green-500"
-          }`}
-        >
-          {userData.isActive ? "Deactivate" : "Activate"}
-        </button>
+      <div className="flex justify-center gap-3 mt-6 flex-wrap">
+        {!isEditing ? (
+          <>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setConfirmDelete(true)} // 🔹 Trigger confirmation
+              className="px-4 py-2 bg-red-500 text-white rounded-lg"
+            >
+              Delete
+            </button>
+            <button
+              onClick={toggleActive}
+              className={`px-4 py-2 text-white rounded-lg ${
+                userData.isActive ? "bg-yellow-500" : "bg-green-500"
+              }`}
+            >
+              {userData.isActive ? "Deactivate" : "Activate"}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={saveChanges}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setIsEditing(false)}
+              className="px-4 py-2 bg-gray-400 text-white rounded-lg"
+            >
+              Cancel
+            </button>
+          </>
+        )}
       </div>
+
+      {/* 🔹 Delete confirmation modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80">
+            <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
+            <p className="mb-6">Are you sure you want to delete this account?</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="px-4 py-2 bg-gray-400 text-white rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={deleteUser}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
