@@ -15,10 +15,11 @@ function LearnerDashboard() {
   const [googleMeetLink, setGoogleMeetLink] = useState("");
 
   const [attendance, setAttendance] = useState({
-    presentDays: 18,
-    absentDays: 2,
-    totalDuration: 30,
+    presentDays: 0,
+    absentDays: 0,
+    totalDuration: 0,
     lastPresentTimestamp: null,
+    registrationDate: null,
   });
 
   const auth = getAuth();
@@ -30,22 +31,57 @@ function LearnerDashboard() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
+
+          // ensure registration date is saved
+          let registrationDate = data.registrationDate;
+          if (!registrationDate) {
+            registrationDate = new Date().toISOString();
+            await setDoc(
+              docRef,
+              { registrationDate },
+              { merge: true }
+            );
+          }
+
+          // calculate total course days (2 months ahead from registration)
+          const regDateObj = new Date(registrationDate);
+          const endDate = new Date(regDateObj);
+          endDate.setMonth(endDate.getMonth() + 2);
+          const totalDays = Math.ceil(
+            (endDate - regDateObj) / (1000 * 60 * 60 * 24)
+          );
+
           setUserData(data);
-          setGoogleMeetLink(data.googleMeet);
+          setGoogleMeetLink(data.googleMeet || "");
           setAttendance({
             presentDays: data.daysPresent || 0,
             absentDays: data.daysAbsent || 0,
-            totalDuration: data.courseDuration || 0,
+            totalDuration: totalDays,
             lastPresentTimestamp: data.lastPresentTimestamp || null,
+            registrationDate,
           });
-          checkAttendanceStatus(data.lastPresentTimestamp, data.daysAbsent);
+
+          checkAttendanceStatus(
+            data.lastPresentTimestamp,
+            data.daysAbsent || 0,
+            registrationDate
+          );
         }
       }
     });
     return () => unsubscribe();
   }, []);
 
-  const checkAttendanceStatus = async (lastTimestamp, currentAbsent) => {
+  const isWeekend = (date) => {
+    const day = date.getDay(); // 0=Sunday, 6=Saturday
+    return day === 0 || day === 6;
+  };
+
+  const checkAttendanceStatus = async (
+    lastTimestamp,
+    currentAbsent,
+    registrationDate
+  ) => {
     if (!lastTimestamp) {
       setButtonDisabled(false);
       return;
@@ -55,10 +91,14 @@ function LearnerDashboard() {
     const lastPresentTime = new Date(lastTimestamp);
     const timeDiff = now - lastPresentTime;
 
-    if (timeDiff >= 34 * 60 * 60 * 1000) {
-      await markAsAbsent(currentAbsent);
-      setButtonDisabled(false);
-    } else if (timeDiff >= 22 * 60 * 60 * 1000) {
+    if (timeDiff >= 24 * 60 * 60 * 1000) {
+      // check day after last present
+      const missedDate = new Date(lastPresentTime);
+      missedDate.setDate(missedDate.getDate() + 1);
+
+      if (!isWeekend(missedDate)) {
+        await markAsAbsent(currentAbsent);
+      }
       setButtonDisabled(false);
     } else {
       setButtonDisabled(true);
@@ -115,8 +155,15 @@ function LearnerDashboard() {
     return "Good evening";
   };
 
-  const daysLeft =
-    attendance.totalDuration - (attendance.presentDays + attendance.absentDays);
+  // calculate days elapsed since registration
+  const daysElapsed = attendance.registrationDate
+    ? Math.floor(
+        (new Date() - new Date(attendance.registrationDate)) /
+          (1000 * 60 * 60 * 24)
+      )
+    : 0;
+
+  const daysLeft = attendance.totalDuration - daysElapsed;
 
   const attendanceData = {
     labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
@@ -154,7 +201,10 @@ function LearnerDashboard() {
       <div className="container mx-auto">
         <h1 className="text-2xl font-bold mb-4">
           {getGreeting()},{" "}
-          <span className="text-green-600">{userData?.firstName || "Learner"}</span> 👋
+          <span className="text-green-600">
+            {userData?.firstName || "Learner"}
+          </span>{" "}
+          👋
         </h1>
 
         {allowedCurricula.includes(userData?.curriculum) && (
@@ -169,9 +219,9 @@ function LearnerDashboard() {
                 placeholder="Find your Google Meet link here..."
                 value={googleMeetLink}
                 onChange={(e) => setGoogleMeetLink(e.target.value)}
-                 readOnly
+                readOnly
               />
-              
+
               {typeof googleMeetLink === "string" &&
                 googleMeetLink.includes("https://meet.google.com") && (
                   <div className="mt-2">
