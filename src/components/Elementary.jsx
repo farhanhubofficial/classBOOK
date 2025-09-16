@@ -415,6 +415,24 @@ const [meetLink, setMeetLink] = useState("");
   Upload Final Exam 
 </button>
 
+<button
+  className="bg-pink-600 text-white px-4 py-2 rounded-md mt-4"
+  onClick={() =>
+    navigate(`/admin/classroom-lessons/${selectedClassroom.name}`)
+  }
+>
+  Lessons
+</button>
+
+<button
+  className="bg-pink-600 text-white px-4 py-2 rounded-md mt-4"
+  onClick={() =>
+    navigate(`/admin/classroom-assignments/${selectedClassroom.name}`)
+  }
+>
+  All Assignments
+</button>
+
 
 
             </div>

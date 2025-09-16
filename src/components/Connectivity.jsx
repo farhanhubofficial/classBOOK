@@ -49,6 +49,7 @@ import LoadingScreen from './LoadingScreen'; // ✅ custom loading component
 import UsersPanel from './UsersPanel';
 import StaffManagement from './StaffManagement'; 
 
+import ClassroomAssignments from './ClassroomAssignments';
 import TeacherCbc from './TeacherCbc';
 import UserInfo from './UserInfo';
 
@@ -56,6 +57,7 @@ import UserInfo from './UserInfo';
 import TrDashboard from './TrDashboard';
 import PracticalQuiz from './PracticalQuiz';
 import EnglishFinalExamEditor from './EnglishFinalExamEditor';
+import ClassroomLessons from './ClassroomLessons';
 function Connectivity() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -132,6 +134,9 @@ useEffect(() => {
           <Route path="payments" element={<PaymentStatus />} />
   <Route path="view-assignments/:classroomName" element={<ViewSubmittedAssignment />} />
     <Route path="upload-assignments/:classroomName" element={<UploadAssignment />} />
+        <Route path="classroom-lessons/:classroomName" element={<ClassroomLessons />} />
+        <Route path="classroom-assignments/:classroomName" element={<ClassroomAssignments />} />
+
     <Route path="upload-lesson/:classroomName" element={<UploadLesson />} />
      <Route path="upload-practicalquiz/:classroomName" element={<PracticalQuiz />} />
       <Route path="upload-english-final-exam/:classroomName" element={<EnglishFinalExamEditor />} />
