@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/', // Make sure assets and routes resolve correctly on Vercel
+  base: './',  // 🔥 use relative paths so assets load correctly
   server: {
     host: true,
     allowedHosts: [
