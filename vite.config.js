@@ -3,16 +3,9 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/',  // 👈 ensures Vite outputs relative asset paths (works on Vercel)
-  server: {
-    host: true,
-    allowedHosts: [
-      'localhost',
-      'd6ad-41-209-10-50.ngrok-free.app'
-    ],
-  },
+  base: '/',   // ✅ always use absolute paths for Vercel
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
+    emptyOutDir: true, // ✅ deletes old files so no stale hashes remain
   },
 })
