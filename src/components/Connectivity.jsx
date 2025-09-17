@@ -96,7 +96,7 @@ useEffect(() => {
     <>
       {showHeader && <Header />}
       <Routes>
-  <Route path="/" element={<avigate to="/login" replace />} />
+  <Route path="/" element={<Navigate to="/login" replace />} />
  <Route path="/userinfo" element={<UserInfo />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
