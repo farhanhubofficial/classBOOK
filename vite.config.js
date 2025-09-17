@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: './',  // 👈 ensures Vite outputs relative asset paths (works on Vercel)
+  base: '/',  // 👈 ensures Vite outputs relative asset paths (works on Vercel)
   server: {
     host: true,
     allowedHosts: [
