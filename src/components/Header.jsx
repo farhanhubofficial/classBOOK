@@ -19,7 +19,7 @@ function Header() {
       <div className="hidden lg:flex text-black font-[Poppins]">
         <ul className="flex items-center space-x-20">
           <li>
-            <Link to="/" className="hover:text-yellow-500">Home1</Link>
+            <Link to="/" className="hover:text-yellow-500">Home</Link>
           </li>
           <li>
             <Link to="/about" className="hover:text-yellow-500">About Us</Link>
