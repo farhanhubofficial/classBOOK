@@ -48,8 +48,6 @@ import { useAuth } from './AuthContext';
 import LoadingScreen from './LoadingScreen'; // ✅ custom loading component
 import UsersPanel from './UsersPanel';
 import StaffManagement from './StaffManagement'; 
-import { Navigate } from "react-router-dom";
-
 
 // import ClassroomAssignments from './ClassroomAssignments';
 import TeacherCbc from './TeacherCbc';
@@ -76,7 +74,7 @@ const showFooter = !isAdminRoute && !isStudentRoute && !isTeacherRoute;
 
 useEffect(() => {
   if (!loading && user && userData) {
-    if (location.pathname === '/login') {
+    if (location.pathname === '/' || location.pathname === '/login') {
       if (userData.role === 'learner') {
         navigate('/students/dashboard');
       } else if (userData.role === 'admin') {
@@ -96,7 +94,7 @@ useEffect(() => {
     <>
       {showHeader && <Header />}
       <Routes>
-  <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Home />} />
  <Route path="/userinfo" element={<UserInfo />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
