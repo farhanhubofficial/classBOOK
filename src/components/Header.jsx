@@ -12,7 +12,7 @@ function Header() {
     <nav className="sticky top-0 z-50 flex items-center justify-between w-full px-6 py-4 bg-white shadow-md font-[Poppins] lg:px-10">
       {/* Logo */}
       <div className="flex items-center gap-2 text-green-600 text-2xl font-bold">
-        <GiSpellBook /> classBOOK 2
+        <GiSpellBook /> classBOOK 
       </div>
 
       {/* Navbar Links for Large Screens */}
