@@ -81,15 +81,15 @@ const DashboardHome = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         <div className="bg-green-100 p-6 rounded shadow text-center">
           <h3 className="text-lg font-bold text-green-600">Total Students</h3>
-          <p className="text-4xl font-extrabold text-gray-800 mt-2">1,240</p>
+          <p className="text-4xl font-extrabold text-gray-800 mt-2">40</p>
         </div>
         <div className="bg-blue-100 p-6 rounded shadow text-center">
           <h3 className="text-lg font-bold text-blue-600">Total Payments</h3>
-          <p className="text-4xl font-extrabold text-gray-800 mt-2">KES 5.2M</p>
+          <p className="text-4xl font-extrabold text-gray-800 mt-2">KES 50,000</p>
         </div>
         <div className="bg-yellow-100 p-6 rounded shadow text-center">
           <h3 className="text-lg font-bold text-yellow-600">Total Parents</h3>
-          <p className="text-4xl font-extrabold text-gray-800 mt-2">320</p>
+          <p className="text-4xl font-extrabold text-gray-800 mt-2">10</p>
         </div>
       </div>
 
