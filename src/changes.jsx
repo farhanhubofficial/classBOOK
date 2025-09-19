@@ -2,34 +2,23 @@
 //   "buildCommand": "npm run build",
 //   "outputDirectory": "dist",
 //   "framework": "vite",
+//   "cleanUrls": true,
 //   "rewrites": [
+//     { "source": "/assets/(.*)", "destination": "/assets/$1" },
+//     { "source": "/(.*)", "destination": "/index.html" }
+//   ],
+//   "headers": [
 //     {
-//       "source": "/(.*)",
-//       "destination": "/index.html"
+//       "source": "/index.html",
+//       "headers": [
+//         { "key": "Cache-Control", "value": "no-cache" }
+//       ]
+//     },
+//     {
+//       "source": "/assets/(.*)",
+//       "headers": [
+//         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+//       ]
 //     }
 //   ]
 // }
-// ///verecl
-
-
-
-
-// import { defineConfig } from 'vite'
-// import react from '@vitejs/plugin-react'
-
-// export default defineConfig({
-//   plugins: [react()],
-//   base: '',  // 🔥 use relative paths so assets load correctly
-//   server: {
-//     host: true,
-//     allowedHosts: [
-//       'localhost',
-//       'd6ad-41-209-10-50.ngrok-free.app'
-//     ],
-//   },
-//   build: {
-//     outDir: 'dist',
-//     emptyOutDir: true,
-//   },
-// })
-// //////
